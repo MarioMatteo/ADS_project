@@ -21,6 +21,16 @@ class State:
         else:
             self.neighbours[neighbour].append(transition)
 
+    def get_unobservable_neighbours(self):
+        unobservable_neighbours = dict()
+        for state, transitions in self.neighbours:
+            unobservable_transitions = list()
+            for transition in transitions:
+                if not transition.is_observable():
+                    unobservable_transitions.append(transition)
+            unobservable_neighbours[state] = unobservable_transitions
+        return unobservable_neighbours
+
 
 class Transition:
 
@@ -41,27 +51,41 @@ class Transition:
     def is_ambiguous(self):
         return self.ambiguous
 
+    def is_observable(self):
+        return self.event is not None
+
 
 class Event:
 
     def __init__(self, name):
         self.multiset = Counter(name)
 
-    def __str__(self):
+    def get_name(self):
         return "//".join(sorted(self.multiset.elements()))
 
     def get_multiset(self):
         return self.multiset
 
-    def add(self, name):
-        self.multiset.update(name)
+    def add(self, event):
+        if event is not None:
+            self.multiset.update(event.get_name())
+
+    def get_cardinality(self):
+        return sum(self.multiset.values())
 
 
 class Automaton:
 
-    def __init__(self, diagnosability_level, states):
+    def __init__(self, diagnosability_level, initial_state, states):
         self.diagnosability_level = diagnosability_level
+        self.initial_state = initial_state
         self.states = states
+
+    def get_diagnosability_level(self):
+        return self.diagnosability_level
+
+    def get_initial_state(self):
+        return self.initial_state
 
     def get_states(self):
         return self.states

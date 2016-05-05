@@ -23,4 +23,5 @@ class Parser:
                 source.add_transition(destination, Transition(event=event))
             elif transition.attrib["type"] == Transition.TYPE_FAULT:
                 source.add_transition(destination, Transition(fault=True))
-        return Automaton(diagnosability_level, states.values())
+        initial_state_name = self.root.find("states/state[@type='initial']").text
+        return Automaton(diagnosability_level, states[initial_state_name], states.values())
