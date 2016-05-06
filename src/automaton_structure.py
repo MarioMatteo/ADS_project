@@ -5,15 +5,19 @@ class State:
     def __init__(self, name):
         self.name = name
         self.neighbours = dict()
-
-    def __str__(self):
-        return self.name
+        self.visited = False
 
     def get_name(self):
         return self.name
 
     def get_neighbours(self):
         return self.neighbours
+
+    def is_visited(self):
+        return self.visited
+
+    def set_visited(self):
+        self.visited = True
 
     def add_transition(self, neighbour, transition):
         if neighbour not in self.neighbours:
@@ -24,7 +28,9 @@ class State:
     def transition_already_present(self, _neighbour, _transition):
         for neighbour, transitions in self.get_neighbours().iteritems():
             for transition in transitions:
-                if neighbour.get_name() == _neighbour.get_name() and transition.get_event().get_name() == _transition.get_event().get_name():
+                if neighbour.get_name() == _neighbour.get_name()\
+                        and transition.get_event().get_name() == _transition.get_event().get_name()\
+                        and transition.is_fault() == _transition.is_fault():
                     return True
         return False
 
@@ -47,6 +53,11 @@ class Transition:
 
     def is_observable(self):
         return self.event is not None
+
+    def get_event_cardinality(self):
+        if self.event is None:
+            return 0
+        return self.event.get_cardinality()
 
 
 class Event:
@@ -95,3 +106,15 @@ class Automaton:
                         res += " (fault)"
                     res += "\n"
         return res
+
+    def find_reachable_states(self, initial_state):
+        initial_state.set_visited()
+        for state in initial_state.get_neighbours():
+            if not state.is_visited():
+                self.find_reachable_states(state)
+
+    def remove_unreachable_states(self):
+        self.find_reachable_states(self.initial_state)
+        for state in self.states:
+            if not state.is_visited():
+                self.states.remove(state)

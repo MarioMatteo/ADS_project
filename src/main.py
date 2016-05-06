@@ -31,13 +31,16 @@ automaton = load(automaton_file)
 #     exit(-1)
 
 bad_twin1 = generate_bad_twin(automaton)
+# print str(bad_twin1)
 save(bad_twin1, "b1.xml")
-bad_twin1 = load("b1.xml")
-
+# bad_twin1 = load("b1.xml")
+good_twin1 = generate_good_twin(bad_twin1)
+save(good_twin1, "g1.xml")
+#
 bad_twin2 = generate_bad_twin(bad_twin1, 2)
 save(bad_twin2, "b2.xml")
-bad_twin2 = load("b2.xml")
-
+# bad_twin2 = load("b2.xml")
+#
 bad_twin3 = generate_bad_twin(bad_twin2, 3)
 save(bad_twin3, "b3.xml")
 
