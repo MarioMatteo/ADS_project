@@ -1,22 +1,20 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<automaton diagnosability-level="2">
-
+<?xml version="1.0" ?>
+<automaton>
     <states>
-        <state type="initial">A</state>
+        <state initial="true">A</state>
         <state>B</state>
         <state>C</state>
         <state>D</state>
         <state>E</state>
         <state>F</state>
     </states>
-
     <transitions>
-        <transition type="observable">
+        <transition observable="true">
             <source>A</source>
             <event>b</event>
             <destination>B</destination>
         </transition>
-        <transition type="observable">
+        <transition observable="true">
             <source>A</source>
             <event>a</event>
             <destination>C</destination>
@@ -29,12 +27,12 @@
             <source>B</source>
             <destination>D</destination>
         </transition>
-        <transition type="observable">
+        <transition observable="true">
             <source>D</source>
             <event>c</event>
             <destination>D</destination>
         </transition>
-        <transition type="observable">
+        <transition observable="true">
             <source>C</source>
             <event>d</event>
             <destination>E</destination>
@@ -47,15 +45,14 @@
             <source>E</source>
             <destination>A</destination>
         </transition>
-        <transition type="fault">
+        <transition fault="true">
             <source>E</source>
             <destination>F</destination>
         </transition>
-        <transition type="observable">
+        <transition observable="true">
             <source>F</source>
             <event>c</event>
             <destination>F</destination>
         </transition>
     </transitions>
-
 </automaton>

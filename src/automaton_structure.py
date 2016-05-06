@@ -18,24 +18,18 @@ class State:
     def add_transition(self, neighbour, transition):
         if neighbour not in self.neighbours:
             self.neighbours[neighbour] = [transition]
-        else:
+        elif not self.transition_already_present(neighbour, transition):
             self.neighbours[neighbour].append(transition)
 
-    def get_unobservable_neighbours(self):
-        unobservable_neighbours = dict()
-        for state, transitions in self.neighbours:
-            unobservable_transitions = list()
+    def transition_already_present(self, _neighbour, _transition):
+        for neighbour, transitions in self.get_neighbours().iteritems():
             for transition in transitions:
-                if not transition.is_observable():
-                    unobservable_transitions.append(transition)
-            unobservable_neighbours[state] = unobservable_transitions
-        return unobservable_neighbours
+                if neighbour.get_name() == _neighbour.get_name() and transition.get_event().get_name() == _transition.get_event().get_name():
+                    return True
+        return False
 
 
 class Transition:
-
-    TYPE_OBSERVABLE = "observable"
-    TYPE_FAULT = "fault"
 
     def __init__(self, event=None, fault=False, ambiguous=False):
         self.event = event
@@ -57,7 +51,7 @@ class Transition:
 
 class Event:
 
-    def __init__(self, name):
+    def __init__(self, name=None):
         self.multiset = Counter(name)
 
     def get_name(self):
@@ -68,21 +62,20 @@ class Event:
 
     def add(self, event):
         if event is not None:
-            self.multiset.update(event.get_name())
+            self.multiset |= event.get_multiset()
 
     def get_cardinality(self):
         return sum(self.multiset.values())
 
+    def is_composed_by_all_same_events(self):
+        return len(self.multiset) == 1
+
 
 class Automaton:
 
-    def __init__(self, diagnosability_level, initial_state, states):
-        self.diagnosability_level = diagnosability_level
+    def __init__(self, initial_state, states):
         self.initial_state = initial_state
         self.states = states
-
-    def get_diagnosability_level(self):
-        return self.diagnosability_level
 
     def get_initial_state(self):
         return self.initial_state
@@ -90,5 +83,15 @@ class Automaton:
     def get_states(self):
         return self.states
 
-    def get_transitions(self):
-        return [transition for state in self.states for transition in state.get_neighbours().values()]
+    def __str__(self):
+        res = ""
+        for state in self.states:
+            for destination, transitions in state.get_neighbours().iteritems():
+                for transition in transitions:
+                    res += state.get_name() + " -> " + destination.get_name()
+                    if transition.is_observable():
+                        res += " | " + transition.get_event().get_name()
+                    if transition.is_fault():
+                        res += " (fault)"
+                    res += "\n"
+        return res
