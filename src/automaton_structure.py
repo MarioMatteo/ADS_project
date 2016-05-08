@@ -73,7 +73,8 @@ class Event:
 
     def add(self, event):
         if event is not None:
-            self.multiset |= event.get_multiset()
+            for _event in event.multiset.elements():
+                self.multiset.update(_event)
 
     def get_cardinality(self):
         return sum(self.multiset.values())

@@ -16,20 +16,23 @@ def generate_bad_twin(automaton, level=1):
                     # print "source " + state.get_name() + ", destination " + destination.get_name()
                     triplets = find(destination, level - transition.get_event_cardinality(), fault, transition.get_event())
                     for event, destination2, fault2 in triplets:
-                        states[state.get_name()].add_transition(states[destination2.get_name()],
-                                                                Transition(event=event, fault=fault2))
+                        if level == 1 or not event.is_composed_by_all_same_events():
+                            states[state.get_name()].add_transition(states[destination2.get_name()],
+                                                                    Transition(event=event, fault=fault2))
     bad_twin = Automaton(initial_state, states.values())
     if level == 1:
         bad_twin.remove_unreachable_states()
     return bad_twin
 
-def generate_good_twin(automaton):
-    good_twin = deepcopy(automaton)
-    for state in good_twin.get_states():
-        for transitions in state.get_neighbours().values():
+def generate_good_twin(bad_twin):
+    initial_state, states = initialize_states(bad_twin)
+    for state in bad_twin.get_states():
+        for destination, transitions in state.get_neighbours().iteritems():
             for transition in transitions:
-                if transition.is_fault():
-                    transitions.remove(transition)
+                if not transition.is_fault():
+                    states[state.get_name()].add_transition(states[destination.get_name()],
+                                                            deepcopy(transition))
+    good_twin = Automaton(initial_state, states.values())
     good_twin.remove_unreachable_states()
     return good_twin
 

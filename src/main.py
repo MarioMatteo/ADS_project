@@ -30,19 +30,14 @@ automaton = load(automaton_file)
 # except IOError:
 #     exit(-1)
 
-bad_twin1 = generate_bad_twin(automaton)
-# print str(bad_twin1)
-save(bad_twin1, "b1.xml")
-# bad_twin1 = load("b1.xml")
-good_twin1 = generate_good_twin(bad_twin1)
-save(good_twin1, "g1.xml")
-#
-bad_twin2 = generate_bad_twin(bad_twin1, 2)
-save(bad_twin2, "b2.xml")
-# bad_twin2 = load("b2.xml")
-#
-bad_twin3 = generate_bad_twin(bad_twin2, 3)
-save(bad_twin3, "b3.xml")
+level=3
+old_bad_twin = automaton
+for i in range(1, level+1):
+    new_bad_twin = generate_bad_twin(old_bad_twin, i)
+    save(new_bad_twin, "b"+str(i)+".xml")
+    new_good_twin = generate_good_twin(new_bad_twin)
+    save(new_good_twin, "g"+str(i)+".xml")
+    old_bad_twin = new_bad_twin
 
 # print str(bad_twin3)
 

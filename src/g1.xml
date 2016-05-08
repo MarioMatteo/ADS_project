@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<automaton>
+	<states>
+		<state initial="true">A</state>
+		<state>C</state>
+		<state>B</state>
+		<state>E</state>
+		<state>D</state>
+		<state>F</state>
+	</states>
+	<transitions>
+		<transition observable="true">
+			<source>A</source>
+			<event>a</event>
+			<destination>C</destination>
+		</transition>
+		<transition observable="true">
+			<source>A</source>
+			<event>b</event>
+			<destination>B</destination>
+		</transition>
+		<transition observable="true">
+			<source>C</source>
+			<event>d</event>
+			<destination>E</destination>
+		</transition>
+		<transition observable="true">
+			<source>C</source>
+			<event>c</event>
+			<destination>F</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>a</event>
+			<destination>C</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>c</event>
+			<destination>D</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>b</event>
+			<destination>B</destination>
+		</transition>
+		<transition observable="true">
+			<source>E</source>
+			<event>a</event>
+			<destination>C</destination>
+		</transition>
+		<transition observable="true">
+			<source>E</source>
+			<event>b</event>
+			<destination>B</destination>
+		</transition>
+		<transition observable="true">
+			<source>D</source>
+			<event>c</event>
+			<destination>D</destination>
+		</transition>
+		<transition observable="true">
+			<source>F</source>
+			<event>c</event>
+			<destination>F</destination>
+		</transition>
+	</transitions>
+</automaton>
