@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <automaton>
 	<states>
 		<state initial="true">A</state>
@@ -11,18 +11,13 @@
 	<transitions>
 		<transition observable="true">
 			<source>A</source>
-			<event>a</event>
-			<destination>C</destination>
-		</transition>
-		<transition observable="true">
-			<source>A</source>
 			<event>b</event>
 			<destination>B</destination>
 		</transition>
 		<transition observable="true">
-			<source>C</source>
-			<event>c</event>
-			<destination>F</destination>
+			<source>A</source>
+			<event>a</event>
+			<destination>C</destination>
 		</transition>
 		<transition observable="true">
 			<source>C</source>
@@ -30,14 +25,19 @@
 			<destination>E</destination>
 		</transition>
 		<transition observable="true">
-			<source>B</source>
-			<event>a</event>
-			<destination>C</destination>
+			<source>C</source>
+			<event>c</event>
+			<destination>F</destination>
 		</transition>
 		<transition observable="true">
 			<source>B</source>
 			<event>b</event>
 			<destination>B</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>a</event>
+			<destination>C</destination>
 		</transition>
 		<transition observable="true">
 			<source>B</source>
@@ -46,13 +46,13 @@
 		</transition>
 		<transition observable="true">
 			<source>E</source>
-			<event>a</event>
-			<destination>C</destination>
+			<event>b</event>
+			<destination>B</destination>
 		</transition>
 		<transition observable="true">
 			<source>E</source>
-			<event>b</event>
-			<destination>B</destination>
+			<event>a</event>
+			<destination>C</destination>
 		</transition>
 		<transition fault="true" observable="true">
 			<source>E</source>

@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <automaton>
 	<states>
 		<state initial="true">A</state>
@@ -11,12 +11,12 @@
 	<transitions>
 		<transition observable="true">
 			<source>A</source>
-			<event>a//d</event>
+			<event>a//b//d</event>
 			<destination>E</destination>
 		</transition>
 		<transition observable="true">
 			<source>A</source>
-			<event>a//b//d</event>
+			<event>a//d</event>
 			<destination>E</destination>
 		</transition>
 		<transition observable="true">
@@ -31,22 +31,7 @@
 		</transition>
 		<transition observable="true">
 			<source>A</source>
-			<event>b//b//c</event>
-			<destination>D</destination>
-		</transition>
-		<transition observable="true">
-			<source>A</source>
-			<event>b//c//c</event>
-			<destination>D</destination>
-		</transition>
-		<transition observable="true">
-			<source>A</source>
-			<event>b//c</event>
-			<destination>D</destination>
-		</transition>
-		<transition observable="true">
-			<source>A</source>
-			<event>a//a//d</event>
+			<event>a//b</event>
 			<destination>C</destination>
 		</transition>
 		<transition observable="true">
@@ -56,7 +41,7 @@
 		</transition>
 		<transition observable="true">
 			<source>A</source>
-			<event>a//b</event>
+			<event>a//a//d</event>
 			<destination>C</destination>
 		</transition>
 		<transition observable="true">
@@ -66,7 +51,7 @@
 		</transition>
 		<transition observable="true">
 			<source>A</source>
-			<event>a//c</event>
+			<event>a//b//c</event>
 			<destination>F</destination>
 		</transition>
 		<transition observable="true">
@@ -76,8 +61,23 @@
 		</transition>
 		<transition observable="true">
 			<source>A</source>
-			<event>a//b//c</event>
+			<event>a//c</event>
 			<destination>F</destination>
+		</transition>
+		<transition observable="true">
+			<source>A</source>
+			<event>b//c</event>
+			<destination>D</destination>
+		</transition>
+		<transition observable="true">
+			<source>A</source>
+			<event>b//c//c</event>
+			<destination>D</destination>
+		</transition>
+		<transition observable="true">
+			<source>A</source>
+			<event>b//b//c</event>
+			<destination>D</destination>
 		</transition>
 		<transition observable="true">
 			<source>C</source>
@@ -88,16 +88,6 @@
 			<source>C</source>
 			<event>a//d//d</event>
 			<destination>E</destination>
-		</transition>
-		<transition observable="true">
-			<source>C</source>
-			<event>b//b//d</event>
-			<destination>B</destination>
-		</transition>
-		<transition observable="true">
-			<source>C</source>
-			<event>b//d</event>
-			<destination>B</destination>
 		</transition>
 		<transition observable="true">
 			<source>C</source>
@@ -116,22 +106,32 @@
 		</transition>
 		<transition observable="true">
 			<source>C</source>
+			<event>a//c//d</event>
+			<destination>F</destination>
+		</transition>
+		<transition observable="true">
+			<source>C</source>
 			<event>c</event>
 			<destination>F</destination>
 		</transition>
 		<transition observable="true">
 			<source>C</source>
-			<event>a//c//d</event>
-			<destination>F</destination>
+			<event>b//b//d</event>
+			<destination>B</destination>
 		</transition>
 		<transition observable="true">
-			<source>B</source>
-			<event>a//d</event>
-			<destination>E</destination>
+			<source>C</source>
+			<event>b//d</event>
+			<destination>B</destination>
 		</transition>
 		<transition observable="true">
 			<source>B</source>
 			<event>a//b//d</event>
+			<destination>E</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>a//d</event>
 			<destination>E</destination>
 		</transition>
 		<transition observable="true">
@@ -146,17 +146,47 @@
 		</transition>
 		<transition observable="true">
 			<source>B</source>
-			<event>b//b//c</event>
+			<event>a//b</event>
+			<destination>C</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>a</event>
+			<destination>C</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>a//a//d</event>
+			<destination>C</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>a//b//b</event>
+			<destination>C</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>a//b//c</event>
+			<destination>F</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>a//c//c</event>
+			<destination>F</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>a//c</event>
+			<destination>F</destination>
+		</transition>
+		<transition observable="true">
+			<source>B</source>
+			<event>b//c</event>
 			<destination>D</destination>
 		</transition>
 		<transition observable="true">
 			<source>B</source>
 			<event>b//c//c</event>
-			<destination>D</destination>
-		</transition>
-		<transition observable="true">
-			<source>B</source>
-			<event>b//c</event>
 			<destination>D</destination>
 		</transition>
 		<transition observable="true">
@@ -166,47 +196,17 @@
 		</transition>
 		<transition observable="true">
 			<source>B</source>
-			<event>a//a//d</event>
-			<destination>C</destination>
-		</transition>
-		<transition observable="true">
-			<source>B</source>
-			<event>a</event>
-			<destination>C</destination>
-		</transition>
-		<transition observable="true">
-			<source>B</source>
-			<event>a//b</event>
-			<destination>C</destination>
-		</transition>
-		<transition observable="true">
-			<source>B</source>
-			<event>a//b//b</event>
-			<destination>C</destination>
-		</transition>
-		<transition observable="true">
-			<source>B</source>
-			<event>a//c</event>
-			<destination>F</destination>
-		</transition>
-		<transition observable="true">
-			<source>B</source>
-			<event>a//c//c</event>
-			<destination>F</destination>
-		</transition>
-		<transition observable="true">
-			<source>B</source>
-			<event>a//b//c</event>
-			<destination>F</destination>
-		</transition>
-		<transition observable="true">
-			<source>E</source>
-			<event>a//d</event>
-			<destination>E</destination>
+			<event>b//b//c</event>
+			<destination>D</destination>
 		</transition>
 		<transition observable="true">
 			<source>E</source>
 			<event>a//b//d</event>
+			<destination>E</destination>
+		</transition>
+		<transition observable="true">
+			<source>E</source>
+			<event>a//d</event>
 			<destination>E</destination>
 		</transition>
 		<transition observable="true">
@@ -221,22 +221,7 @@
 		</transition>
 		<transition observable="true">
 			<source>E</source>
-			<event>b//b//c</event>
-			<destination>D</destination>
-		</transition>
-		<transition observable="true">
-			<source>E</source>
-			<event>b//c//c</event>
-			<destination>D</destination>
-		</transition>
-		<transition observable="true">
-			<source>E</source>
-			<event>b//c</event>
-			<destination>D</destination>
-		</transition>
-		<transition observable="true">
-			<source>E</source>
-			<event>a//a//d</event>
+			<event>a//b</event>
 			<destination>C</destination>
 		</transition>
 		<transition observable="true">
@@ -246,7 +231,7 @@
 		</transition>
 		<transition observable="true">
 			<source>E</source>
-			<event>a//b</event>
+			<event>a//a//d</event>
 			<destination>C</destination>
 		</transition>
 		<transition observable="true">
@@ -256,7 +241,7 @@
 		</transition>
 		<transition observable="true">
 			<source>E</source>
-			<event>a//c</event>
+			<event>a//b//c</event>
 			<destination>F</destination>
 		</transition>
 		<transition observable="true">
@@ -266,8 +251,23 @@
 		</transition>
 		<transition observable="true">
 			<source>E</source>
-			<event>a//b//c</event>
+			<event>a//c</event>
 			<destination>F</destination>
+		</transition>
+		<transition observable="true">
+			<source>E</source>
+			<event>b//c</event>
+			<destination>D</destination>
+		</transition>
+		<transition observable="true">
+			<source>E</source>
+			<event>b//c//c</event>
+			<destination>D</destination>
+		</transition>
+		<transition observable="true">
+			<source>E</source>
+			<event>b//b//c</event>
+			<destination>D</destination>
 		</transition>
 		<transition observable="true">
 			<source>D</source>

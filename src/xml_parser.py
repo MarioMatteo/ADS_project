@@ -44,10 +44,12 @@ def save(automaton, file_path):
                     transition = ET.SubElement(transitions, "transition")
                 if _transition.is_fault():
                     transition.set("fault", "true")
+                if _transition.is_ambiguous():
+                    transition.set("ambiguous", "true")
                 ET.SubElement(transition, "source").text = state.get_name()
                 if event is not None:
                     ET.SubElement(transition, "event").text = event.get_name()
                 ET.SubElement(transition, "destination").text = destination.get_name()
-    xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml()
+    xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(encoding="utf-8")
     with open(file_path, "w") as f:
-        f.write(xmlstr.encode('utf-8'))
+        f.write(xmlstr)

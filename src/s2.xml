@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<automaton>
+	<states>
+		<state>D,D</state>
+		<state initial="true">A,A</state>
+		<state>C,C</state>
+		<state>B,B</state>
+		<state>E,E</state>
+		<state>F,F</state>
+	</states>
+	<transitions>
+		<transition observable="true">
+			<source>D,D</source>
+			<event>c</event>
+			<destination>D,D</destination>
+		</transition>
+		<transition observable="true">
+			<source>A,A</source>
+			<event>a//b</event>
+			<destination>C,C</destination>
+		</transition>
+		<transition observable="true">
+			<source>A,A</source>
+			<event>a</event>
+			<destination>C,C</destination>
+		</transition>
+		<transition observable="true">
+			<source>A,A</source>
+			<event>b</event>
+			<destination>B,B</destination>
+		</transition>
+		<transition observable="true">
+			<source>A,A</source>
+			<event>a//c</event>
+			<destination>F,F</destination>
+		</transition>
+		<transition observable="true">
+			<source>A,A</source>
+			<event>b//c</event>
+			<destination>D,D</destination>
+		</transition>
+		<transition observable="true">
+			<source>A,A</source>
+			<event>a//d</event>
+			<destination>E,E</destination>
+		</transition>
+		<transition observable="true">
+			<source>C,C</source>
+			<event>d</event>
+			<destination>E,E</destination>
+		</transition>
+		<transition observable="true">
+			<source>C,C</source>
+			<event>c</event>
+			<destination>F,F</destination>
+		</transition>
+		<transition observable="true">
+			<source>C,C</source>
+			<event>b//d</event>
+			<destination>B,B</destination>
+		</transition>
+		<transition observable="true">
+			<source>C,C</source>
+			<event>a//d</event>
+			<destination>C,C</destination>
+		</transition>
+		<transition observable="true">
+			<source>B,B</source>
+			<event>a//b</event>
+			<destination>C,C</destination>
+		</transition>
+		<transition observable="true">
+			<source>B,B</source>
+			<event>a</event>
+			<destination>C,C</destination>
+		</transition>
+		<transition observable="true">
+			<source>B,B</source>
+			<event>b</event>
+			<destination>B,B</destination>
+		</transition>
+		<transition observable="true">
+			<source>B,B</source>
+			<event>a//c</event>
+			<destination>F,F</destination>
+		</transition>
+		<transition observable="true">
+			<source>B,B</source>
+			<event>b//c</event>
+			<destination>D,D</destination>
+		</transition>
+		<transition observable="true">
+			<source>B,B</source>
+			<event>c</event>
+			<destination>D,D</destination>
+		</transition>
+		<transition observable="true">
+			<source>B,B</source>
+			<event>a//d</event>
+			<destination>E,E</destination>
+		</transition>
+		<transition observable="true">
+			<source>E,E</source>
+			<event>a//b</event>
+			<destination>C,C</destination>
+		</transition>
+		<transition observable="true">
+			<source>E,E</source>
+			<event>a</event>
+			<destination>C,C</destination>
+		</transition>
+		<transition observable="true">
+			<source>E,E</source>
+			<event>b</event>
+			<destination>B,B</destination>
+		</transition>
+		<transition observable="true">
+			<source>E,E</source>
+			<event>a//c</event>
+			<destination>F,F</destination>
+		</transition>
+		<transition observable="true">
+			<source>E,E</source>
+			<event>b//c</event>
+			<destination>D,D</destination>
+		</transition>
+		<transition observable="true">
+			<source>E,E</source>
+			<event>a//d</event>
+			<destination>E,E</destination>
+		</transition>
+		<transition observable="true">
+			<source>F,F</source>
+			<event>c</event>
+			<destination>F,F</destination>
+		</transition>
+	</transitions>
+</automaton>
