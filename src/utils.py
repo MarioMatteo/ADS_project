@@ -1,5 +1,4 @@
-from automaton_structure import *
-from xml_parser import *
+from file_handler import *
 
 from copy import deepcopy
 
@@ -118,34 +117,6 @@ def find(destination, n, fault, event):
                 triplets += find(destination2, n, fault2, event)
     return triplets
 
-def initialize_states(automaton):
-    states = dict()
-    for state in automaton.get_states():
-        states[state.get_name()] = State(state.get_name())
-    initial_state = states[automaton.get_initial_state().get_name()]
-    return initial_state, states
-
-def initialize_states_with_transitions(automaton):
-    states = dict()
-    for state in automaton.get_states():
-        states[state.get_name()] = deepcopy(state)
-    return states
-
-def find_loops(src):
-    visited = set()
-    src.set_visited()
-    for dst in src.get_neighbours():
-        if dst.is_visited():
-            visited.add(dst)
-        else:
-            result = find_loops(dst)
-            if result == True:
-                return True
-            visited.union(result)
-    if src in visited:
-        return True
-    return visited
-
 def first_condition(ambiguous_transitions):
     return len(ambiguous_transitions) == 0
 
@@ -179,8 +150,6 @@ def second_method(automaton, level):
     while i <= level:
         new_bad_twin = generate_bad_twin(old_bad_twin, i)
         save_automata_files(i, bad_twin=new_bad_twin)
-        print second_condition(new_bad_twin)
-        print third_condition(new_bad_twin)
         if not(second_condition(new_bad_twin) or third_condition(new_bad_twin)):
             good_twin = generate_good_twin(new_bad_twin)
             synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
@@ -195,6 +164,34 @@ def second_method(automaton, level):
         old_bad_twin = new_bad_twin
         i += 1
     return True
+
+def initialize_states(automaton):
+    states = dict()
+    for state in automaton.get_states():
+        states[state.get_name()] = State(state.get_name())
+    initial_state = states[automaton.get_initial_state().get_name()]
+    return initial_state, states
+
+def initialize_states_with_transitions(automaton):
+    states = dict()
+    for state in automaton.get_states():
+        states[state.get_name()] = deepcopy(state)
+    return states
+
+def find_loops(src):
+    visited = set()
+    src.set_visited()
+    for dst in src.get_neighbours():
+        if dst.is_visited():
+            visited.add(dst)
+        else:
+            result = find_loops(dst)
+            if result == True:
+                return True
+            visited.union(result)
+    if src in visited:
+        return True
+    return visited
 
 def save_automata_files(level, bad_twin=None, good_twin=None, synchronized=None):
     if bad_twin is not None:
