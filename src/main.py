@@ -13,13 +13,14 @@ try:
 except IOError:
     exit()
 
-level=3
+level=4
 old_bad_twin = automaton
-for i in range(1, level+1):
-    new_bad_twin = generate_bad_twin(old_bad_twin, i)
-    save(new_bad_twin, "b"+str(i)+".xml")
-    new_good_twin = generate_good_twin(new_bad_twin)
-    save(new_good_twin, "g"+str(i)+".xml")
-    old_bad_twin = new_bad_twin
-    synchronized = synchronize(new_bad_twin, new_good_twin)
-    save(synchronized, "s"+str(i)+".xml")
+print str(second_method(automaton, level))
+# for i in range(1, level+1):
+#     new_bad_twin = generate_bad_twin(old_bad_twin, i)
+#     save(new_bad_twin, "b"+str(i)+".xml")
+#     new_good_twin = generate_good_twin(new_bad_twin)
+#     save(new_good_twin, "g"+str(i)+".xml")
+#     old_bad_twin = new_bad_twin
+#     synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, new_good_twin)
+#     save(synchronized, "s"+str(i)+".xml")

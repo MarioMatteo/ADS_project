@@ -2,6 +2,7 @@ from automaton_structure import *
 
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from graphviz import Digraph
 
 def load(file_path):
     tree = ET.parse(file_path)
@@ -53,3 +54,66 @@ def save(automaton, file_path):
     xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(encoding="utf-8")
     with open(file_path, "w") as f:
         f.write(xmlstr)
+
+def save_image(automaton, title, file_name, verbose=False):
+    dot = Digraph(name=file_name, format='png')
+    dot.body.append('labelloc="t"')
+    dot.body.append('label="'+title+'"')
+    for state in automaton.get_states():
+        src = state.get_name().replace(",", "")
+        if state.equals(automaton.get_initial_state()):
+            dot.node(src, label=state.get_name(), _attributes={'shape': 'doublecircle'})
+        else:
+            dot.node(src, label=state.get_name())
+    for state in automaton.get_states():
+        src = state.get_name().replace(",", "")
+        for neighbour, transitions in state.get_neighbours().iteritems():
+            dst = neighbour.get_name().replace(",", "")
+            if verbose:
+                for transition in transitions:
+                    if transition.is_fault():
+                        if transition.is_observable():
+                            dot.edge(src, dst, label=transition.get_event_name(), _attributes={'color': 'red'})
+                        else:
+                            dot.edge(src, dst, _attributes={'color': 'red'})
+                    elif transition.is_ambiguous():
+                        dot.edge(src, dst, label=transition.get_event_name(), _attributes={'color': 'purple'})
+                    elif transition.is_observable():
+                        dot.edge(src, dst, label=transition.get_event_name())
+                    else:
+                        dot.edge(src, dst, _attributes={'color': 'blue'})
+            else:
+                observable = False
+                fault = False
+                ambiguous = False
+                count = 1
+                events = '<'
+                for i in range(len(transitions)):
+                    transition = transitions[i]
+                    if transition.is_fault():
+                        fault = True
+                        if transition.is_observable():
+                            observable = True
+                            events += '<font color="red">' + transition.get_event_name() + '</font>' + \
+                                      ('<br/>+' if count % 2 == 0 and i < len(transitions) - 1 else '+')
+                            count += 1
+                    elif transition.is_ambiguous():
+                        ambiguous = True
+                        observable = True
+                        events += '<font color="purple">' + transition.get_event_name() + '</font>' + \
+                                  ('<br/>+' if count % 2 == 0 and i < len(transitions) - 1 else '+')
+                        count += 1
+                    elif transition.is_observable():
+                        observable = True
+                        events += transition.get_event_name() + ('<br/>+' if count % 2 == 0 and i < len(transitions) - 1 else '+')
+                        count += 1
+                events = ''.join(events.rsplit('+', 1)) + '>'
+                if fault:
+                    dot.edge(src, dst, label=events, _attributes={'color': 'red'})
+                elif ambiguous:
+                    dot.edge(src, dst, label=events, _attributes={'color': 'purple'})
+                elif not observable:
+                    dot.edge(src, dst, _attributes={'color': 'blue'})
+                else:
+                    dot.edge(src, dst, label=events)
+    dot.render('imgs/'+file_name, cleanup=not verbose, view=True)

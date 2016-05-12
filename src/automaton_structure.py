@@ -6,6 +6,7 @@ class State:
         self.name = name
         self.neighbours = dict()
         self.visited = False
+        self.in_cycle = False
 
     def get_name(self):
         return self.name
@@ -15,6 +16,12 @@ class State:
 
     def is_visited(self):
         return self.visited
+
+    def is_in_cycle(self):
+        return self.in_cycle
+
+    def set_in_cycle(self, in_cycle=True):
+        self.in_cycle = in_cycle
 
     def set_visited(self, visited=True):
         self.visited = visited
@@ -138,4 +145,17 @@ class Automaton:
                                 return True
                         except KeyError:
                             events[transition.get_event_name()] = True
+        return False
+
+    def has_ambiguous_events(self):
+        events = dict()
+        for state in self.states:
+            for transitions in state.get_neighbours().values():
+                for transition in transitions:
+                    try:
+                        if events[transition.get_event_name()]:
+                            if transition.is_fault() != events[transition.get_event_name()]:
+                                return True
+                    except KeyError:
+                        events[transition.get_event_name()] = transition.is_fault()
         return False

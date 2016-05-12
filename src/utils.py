@@ -35,8 +35,9 @@ def generate_good_twin(bad_twin):
     good_twin.remove_unreachable_states()
     return good_twin
 
-def synchronize(bad_twin, good_twin):
+def first_synchronize(bad_twin, good_twin):
     states = dict()
+    ambiguous_transitions = set()
     for state in good_twin.get_states():
         states[",".join(state.get_name()*2)] = State(",".join(state.get_name()*2))
     for state in good_twin.get_states():
@@ -67,6 +68,8 @@ def synchronize(bad_twin, good_twin):
                                         states[dst_name] = State(dst_name)
                                         old_diff_states.append(dst_name)
                                     ambiguous = bt_transition.is_fault()
+                                    if ambiguous:
+                                        ambiguous_transitions.add((states[src_name], states[dst_name]))
                                     states[src_name].add_transition(states[dst_name], Transition(
                                         deepcopy(gt_transition.get_event()), ambiguous=ambiguous))
         while len(old_diff_states) > 0:
@@ -86,11 +89,13 @@ def synchronize(bad_twin, good_twin):
                                         states[dst_name] = State(dst_name)
                                         new_diff_states.append(dst_name)
                                     ambiguous = bt_transition.is_fault()
+                                    if ambiguous:
+                                        ambiguous_transitions.add((states[name], states[dst_name]))
                                     states[name].add_transition(states[dst_name], Transition(
                                         deepcopy(gt_transition.get_event()), ambiguous=ambiguous))
             old_diff_states = new_diff_states
     initial_state = states[",".join(good_twin.get_initial_state().get_name()*2)]
-    return Automaton(initial_state, states.values())
+    return Automaton(initial_state, states.values()), ambiguous_transitions
 
 def find(destination, n, fault, event):
     triplets = list()
@@ -123,3 +128,64 @@ def initialize_states_with_transitions(automaton):
     for state in automaton.get_states():
         states[state.get_name()] = deepcopy(state)
     return states
+
+def find_loops(src):
+    visited = set()
+    src.set_visited()
+    for dst in src.get_neighbours():
+        if dst.is_visited():
+            visited.add(dst)
+        else:
+            result = find_loops(dst)
+            if result == True:
+                return True
+            visited.union(find_loops(dst))
+    if src in visited:
+        return True
+    return visited
+
+def first_condition(ambiguous_transitions):
+    return len(ambiguous_transitions) == 0
+
+def second_condition(bad_twin):
+    return not bad_twin.is_non_deterministic()
+
+def third_condition(bad_twin):
+    return not bad_twin.has_ambiguous_events()
+
+def first_method(automaton, level):
+    old_bad_twin = automaton
+    i = 1
+    while i <= level:
+        new_bad_twin = generate_bad_twin(old_bad_twin, i)
+        good_twin = generate_good_twin(new_bad_twin)
+        synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
+        for src, dst in ambiguous_transitions:
+            if not(src.is_visited() or dst.is_visited()):
+                src.set_visited()
+                result = find_loops(dst)
+                if result == True or src in result:
+                    return i - 1
+        old_bad_twin = new_bad_twin
+        i += 1
+    return True
+
+def second_method(automaton, level):
+    old_bad_twin = automaton
+    i = 1
+    while i <= level:
+        print str(i)
+        new_bad_twin = generate_bad_twin(old_bad_twin, i)
+        if not(second_condition(new_bad_twin) or third_condition(new_bad_twin)):
+            good_twin = generate_good_twin(new_bad_twin)
+            synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
+            if not first_condition(ambiguous_transitions):
+                for src, dst in ambiguous_transitions:
+                    if not (src.is_visited() or dst.is_visited()):
+                        src.set_visited()
+                        result = find_loops(dst)
+                        if result == True or src in result:
+                            return i - 1
+        old_bad_twin = new_bad_twin
+        i += 1
+    return True
