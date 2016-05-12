@@ -3,9 +3,10 @@ from automaton_structure import *
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from graphviz import Digraph
+import os
 
-def load(file_path):
-    tree = ET.parse(file_path)
+def load_xml(filepath):
+    tree = ET.parse(filepath)
     root = tree.getroot()
     states = dict()
     for state in root.findall("states/state"):
@@ -25,7 +26,7 @@ def load(file_path):
     initial_state_name = root.find("states/state[@initial='true']").text
     return Automaton(states[initial_state_name], states.values())
 
-def save(automaton, file_path):
+def save_xml(automaton, filename):
     root = ET.Element("automaton")
     states = ET.SubElement(root, "states")
     for state in automaton.get_states():
@@ -52,11 +53,10 @@ def save(automaton, file_path):
                     ET.SubElement(transition, "event").text = event.get_name()
                 ET.SubElement(transition, "destination").text = destination.get_name()
     xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(encoding="utf-8")
-    with open(file_path, "w") as f:
-        f.write(xmlstr)
+    save_file("xmls/" + filename + ".xml", xmlstr)
 
-def save_image(automaton, title, file_name, verbose=False):
-    dot = Digraph(name=file_name, format='png')
+def save_img(automaton, title, file_name, _format, verbose=False):
+    dot = Digraph(name=file_name, format=_format, graph_attr={'rankdir': 'LR'})
     dot.body.append('labelloc="t"')
     dot.body.append('label="'+title+'"')
     for state in automaton.get_states():
@@ -116,4 +116,10 @@ def save_image(automaton, title, file_name, verbose=False):
                     dot.edge(src, dst, _attributes={'color': 'blue'})
                 else:
                     dot.edge(src, dst, label=events)
-    dot.render('imgs/'+file_name, cleanup=not verbose, view=True)
+    dot.render('imgs/' + file_name, cleanup=not verbose, view=False)
+
+def save_file(filename, content):
+    if not os.path.exists(os.path.dirname(filename)):
+        os.makedirs(os.path.dirname(filename))
+    with open(filename, "w") as f:
+        f.write(content)

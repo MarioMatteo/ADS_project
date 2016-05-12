@@ -153,9 +153,8 @@ class Automaton:
             for transitions in state.get_neighbours().values():
                 for transition in transitions:
                     try:
-                        if events[transition.get_event_name()]:
-                            if transition.is_fault() != events[transition.get_event_name()]:
-                                return True
+                        if events[transition.get_event_name()] != transition.is_fault():
+                            return True
                     except KeyError:
                         events[transition.get_event_name()] = transition.is_fault()
         return False

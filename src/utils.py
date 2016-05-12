@@ -1,4 +1,5 @@
 from automaton_structure import *
+from xml_parser import *
 
 from copy import deepcopy
 
@@ -75,9 +76,10 @@ def first_synchronize(bad_twin, good_twin):
         while len(old_diff_states) > 0:
             new_diff_states = list()
             for name in old_diff_states:
-                bt_state, gt_state = bt_states[name.split(",")[0]], gt_states[name.split(",")[1]]
                 if name in rev_flags:
                     bt_state, gt_state = bt_states[name.split(",")[1]], gt_states[name.split(",")[0]]
+                else:
+                    bt_state, gt_state = bt_states[name.split(",")[0]], gt_states[name.split(",")[1]]
                 for bt_neighbour, bt_transitions in bt_state.get_neighbours().iteritems():
                     for bt_transition in bt_transitions:
                         for gt_neighbour, gt_transitions in gt_state.get_neighbours().iteritems():
@@ -160,6 +162,7 @@ def first_method(automaton, level):
         new_bad_twin = generate_bad_twin(old_bad_twin, i)
         good_twin = generate_good_twin(new_bad_twin)
         synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
+        save_automata_files(i, new_bad_twin, good_twin, synchronized)
         for src, dst in ambiguous_transitions:
             if not(src.is_visited() or dst.is_visited()):
                 src.set_visited()
@@ -174,11 +177,14 @@ def second_method(automaton, level):
     old_bad_twin = automaton
     i = 1
     while i <= level:
-        print str(i)
         new_bad_twin = generate_bad_twin(old_bad_twin, i)
+        save_automata_files(i, bad_twin=new_bad_twin)
+        print second_condition(new_bad_twin)
+        print third_condition(new_bad_twin)
         if not(second_condition(new_bad_twin) or third_condition(new_bad_twin)):
             good_twin = generate_good_twin(new_bad_twin)
             synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
+            save_automata_files(i, good_twin=good_twin, synchronized=synchronized)
             if not first_condition(ambiguous_transitions):
                 for src, dst in ambiguous_transitions:
                     if not (src.is_visited() or dst.is_visited()):
@@ -189,3 +195,14 @@ def second_method(automaton, level):
         old_bad_twin = new_bad_twin
         i += 1
     return True
+
+def save_automata_files(level, bad_twin=None, good_twin=None, synchronized=None):
+    if bad_twin is not None:
+        save_xml(bad_twin, "b" + str(level))
+        save_img(bad_twin, "Bad twin - Level " + str(level), "b" + str(level), "png")
+    if good_twin is not None:
+        save_xml(good_twin, "g" + str(level))
+        save_img(good_twin, "Good twin - Level " + str(level), "g" + str(level), "png")
+    if synchronized is not None:
+        save_xml(synchronized, "s" + str(level))
+        save_img(synchronized, "Synchronized - Level " + str(level), "s" + str(level), "png")
