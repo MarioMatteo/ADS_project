@@ -139,7 +139,7 @@ def find_loops(src):
             result = find_loops(dst)
             if result == True:
                 return True
-            visited.union(find_loops(dst))
+            visited.union(result)
     if src in visited:
         return True
     return visited
