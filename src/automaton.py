@@ -6,7 +6,6 @@ class State:
         self.name = name
         self.neighbours = dict()
         self.visited = False
-        self.in_cycle = False
 
     def get_name(self):
         return self.name
@@ -16,12 +15,6 @@ class State:
 
     def is_visited(self):
         return self.visited
-
-    def is_in_cycle(self):
-        return self.in_cycle
-
-    def set_in_cycle(self, in_cycle=True):
-        self.in_cycle = in_cycle
 
     def set_visited(self, visited=True):
         self.visited = visited
@@ -38,6 +31,15 @@ class State:
                     and transition.is_fault() == _transition.is_fault():
                 return True
         return False
+
+    def get_current_level_transitions(self, level, get_faulty=True):
+        current_level_transitions = dict()
+        for neighbour, transitions in self.neighbours.iteritems():
+            current_level_transitions[neighbour] = list()
+            for transition in transitions:
+                if transition.get_event_cardinality() == level and get_faulty:
+                    current_level_transitions[neighbour].append(transition)
+        return current_level_transitions
 
     def equals(self, state):
         return self.name == state.get_name()
@@ -106,19 +108,6 @@ class Automaton:
 
     def get_states(self):
         return self.states
-
-    def __str__(self):
-        res = ""
-        for state in self.states:
-            for destination, transitions in state.get_neighbours().iteritems():
-                for transition in transitions:
-                    res += state.get_name() + " -> " + destination.get_name()
-                    if transition.is_observable():
-                        res += " | " + transition.get_event().get_name()
-                    if transition.is_fault():
-                        res += " (fault)"
-                    res += "\n"
-        return res
 
     def find_reachable_states(self, initial_state):
         initial_state.set_visited()

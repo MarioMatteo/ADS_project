@@ -17,5 +17,5 @@ old_bad_twin = automaton
 save_img(automaton, "Automaton", "automaton", "png")
 
 # print "First method: " + str(first_method(automaton, level))
-print "Second method: " + str(second_method(automaton, level))
-# print "Third method: " + str(third_method(automaton, level))
+# print "Second method: " + str(second_method(automaton, level))
+print "Third method: " + str(third_method(automaton, level))

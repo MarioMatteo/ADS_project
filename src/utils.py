@@ -98,6 +98,59 @@ def first_synchronize(bad_twin, good_twin):
     initial_state = states[",".join(good_twin.get_initial_state().get_name()*2)]
     return Automaton(initial_state, states.values()), ambiguous_transitions
 
+def second_synchronize(old_synchronized, ambiguous_transitions, bad_twin, level):
+    states = initialize_states_with_transitions(old_synchronized)
+    twins_states = initialize_states_with_transitions(bad_twin)
+    old_diff_states = list()
+    rev_flags = set()
+    for state in states.values():
+        src_name = state.get_name()
+        for bt_neighbour, bt_transitions in twins_states[src_name.split(",")[0]].get_current_level_transitions(level).iteritems():
+            for bt_transition in bt_transitions:
+                for gt_neighbour, gt_transitions in twins_states[src_name.split(",")[1]].get_current_level_transitions(level).iteritems():
+                    for gt_transition in gt_transitions:
+                        if gt_transition.get_event_name() == bt_transition.get_event_name():
+                            if (not bt_neighbour.equals(gt_neighbour)) or (bt_neighbour.equals(gt_neighbour)\
+                                                         and gt_transition.is_fault() != bt_transition.is_fault()):
+                                dst_name = bt_neighbour.get_name() + "," + gt_neighbour.get_name()
+                                rev_dst_name = ",".join(sorted(dst_name.replace(",", "")))
+                                if dst_name != rev_dst_name:
+                                    dst_name = rev_dst_name
+                                    rev_flags.add(dst_name)
+                                if dst_name not in states:
+                                    states[dst_name] = State(dst_name)
+                                    old_diff_states.append(dst_name)
+                                ambiguous = bt_transition.is_fault()
+                                if ambiguous:
+                                    ambiguous_transitions.add((states[src_name], states[dst_name]))
+                                states[src_name].add_transition(states[dst_name], Transition(
+                                    deepcopy(gt_transition.get_event()), ambiguous=ambiguous))
+    while len(old_diff_states) > 0:
+        new_diff_states = list()
+        for name in old_diff_states:
+            if name in rev_flags:
+                bt_state, gt_state = twins_states[name.split(",")[1]], twins_states[name.split(",")[0]]
+            else:
+                bt_state, gt_state = twins_states[name.split(",")[0]], twins_states[name.split(",")[1]]
+            for bt_neighbour, bt_transitions in bt_state.get_neighbours().iteritems():
+                for bt_transition in bt_transitions:
+                    for gt_neighbour, gt_transitions in gt_state.get_neighbours().iteritems():
+                        for gt_transition in gt_transitions:
+                            if gt_transition.get_event_name() == bt_transition.get_event_name():
+                                dst_name = bt_neighbour.get_name() + "," + gt_neighbour.get_name()
+                                dst_name = ",".join(sorted(dst_name.replace(",", "")))
+                                if dst_name not in states:
+                                    states[dst_name] = State(dst_name)
+                                    new_diff_states.append(dst_name)
+                                ambiguous = bt_transition.is_fault()
+                                if ambiguous:
+                                    ambiguous_transitions.add((states[name], states[dst_name]))
+                                states[name].add_transition(states[dst_name], Transition(
+                                    deepcopy(gt_transition.get_event()), ambiguous=ambiguous))
+        old_diff_states = new_diff_states
+    initial_state = states[old_synchronized.get_initial_state().get_name()]
+    return Automaton(initial_state, states.values()), ambiguous_transitions
+
 def find(destination, n, fault, event):
     triplets = list()
     for destination2, transitions in destination.get_neighbours().iteritems():
@@ -135,11 +188,13 @@ def first_method(automaton, level):
         synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
         save_automata_files(i, new_bad_twin, good_twin, synchronized)
         for src, dst in ambiguous_transitions:
-            if not(src.is_visited() or dst.is_visited()):
-                src.set_visited()
-                result = find_loops(dst)
-                if result == True or src in result:
-                    return i - 1
+            if find_loops(dst, set([src])):
+                return i - 1
+            # if not (src.is_visited() or dst.is_visited()):
+            # src.set_visited()
+            # result = find_loops(dst)
+            # if result == True or src in result:
+            #     return i - 1
         old_bad_twin = new_bad_twin
         i += 1
     return True
@@ -156,11 +211,44 @@ def second_method(automaton, level):
             save_automata_files(i, good_twin=good_twin, synchronized=synchronized)
             if not first_condition(ambiguous_transitions):
                 for src, dst in ambiguous_transitions:
-                    if not (src.is_visited() or dst.is_visited()):
-                        src.set_visited()
-                        result = find_loops(dst)
-                        if result == True or src in result:
-                            return i - 1
+                    if find_loops(dst, set([src])):
+                        return i - 1
+                    # if not (src.is_visited() or dst.is_visited()):
+                        # src.set_visited()
+                        # result = find_loops(dst)
+                        # if result == True or src in result:
+                        #     return i - 1
+        old_bad_twin = new_bad_twin
+        i += 1
+    return True
+
+def third_method(automaton, level):
+    old_bad_twin = automaton
+    i = 1
+    first_sync = True
+    synchronized = None
+    ambiguous_transitions = None
+    while i <= level:
+        new_bad_twin = generate_bad_twin(old_bad_twin, i)
+        save_automata_files(i, bad_twin=new_bad_twin)
+        if not (second_condition(new_bad_twin) or third_condition(new_bad_twin)):
+            if not first_sync:
+                synchronized, ambiguous_transitions = second_synchronize(synchronized, ambiguous_transitions, new_bad_twin, i)
+                save_automata_files(i, synchronized=synchronized)
+            else:
+                good_twin = generate_good_twin(new_bad_twin)
+                synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
+                first_sync = False
+                save_automata_files(i, good_twin=good_twin, synchronized=synchronized)
+            if not first_condition(ambiguous_transitions):
+                for src, dst in ambiguous_transitions:
+                    if find_loops(dst, set([src])):
+                        return i - 1
+                        # if not (src.is_visited() or dst.is_visited()):
+                        # src.set_visited()
+                        # result = find_loops(dst)
+                        # if result == True or src in result:
+                        #     return i - 1
         old_bad_twin = new_bad_twin
         i += 1
     return True
@@ -178,20 +266,30 @@ def initialize_states_with_transitions(automaton):
         states[state.get_name()] = deepcopy(state)
     return states
 
-def find_loops(src):
-    visited = set()
-    src.set_visited()
+# def find_loops(src):
+#     visited = set()
+#     src.set_visited()
+#     for dst in src.get_neighbours():
+#         if dst.is_visited():
+#             visited.add(dst)
+#         else:
+#             result = find_loops(dst)
+#             if result == True:
+#                 return True
+#             visited.union(result)
+#     if src in visited:
+#         return True
+#     return visited
+
+def find_loops(src, visited):
     for dst in src.get_neighbours():
-        if dst.is_visited():
-            visited.add(dst)
-        else:
-            result = find_loops(dst)
-            if result == True:
-                return True
-            visited.union(result)
-    if src in visited:
-        return True
-    return visited
+        if dst in visited:
+            return True
+        new_visited = deepcopy(visited)
+        new_visited.add(src)
+        if find_loops(dst, new_visited):
+            return True
+    return False
 
 def save_automata_files(level, bad_twin=None, good_twin=None, synchronized=None):
     if bad_twin is not None:
