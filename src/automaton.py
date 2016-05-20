@@ -1,4 +1,5 @@
 from collections import Counter
+from copy import copy
 
 class State:
 
@@ -50,6 +51,7 @@ class Transition:
         self.event = event
         self.fault = fault
         self.ambiguous = ambiguous
+        self.crossed = False
 
     def get_event(self):
         return self.event
@@ -59,6 +61,12 @@ class Transition:
 
     def is_ambiguous(self):
         return self.ambiguous
+
+    def set_crossed(self, crossed):
+        self.crossed = crossed
+
+    def is_crossed(self):
+        return self.crossed
 
     def is_observable(self):
         return self.event is not None
@@ -119,7 +127,7 @@ class Automaton:
         for state in self.states:
             state.set_visited(False)
         self.find_reachable_states(self.initial_state)
-        for state in self.states:
+        for state in copy(self.states):
             if not state.is_visited():
                 self.states.remove(state)
 

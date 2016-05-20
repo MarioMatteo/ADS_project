@@ -13,7 +13,9 @@ def generate_bad_twin(automaton, level=1):
                     fault = False
                     if transition.is_fault():
                         fault = True
+                    transition.set_crossed(True)
                     triplets = find(destination, level - transition.get_event_cardinality(), fault, transition.get_event())
+                    transition.set_crossed(False)
                     for event, destination2, fault2 in triplets:
                         if level == 1 or not event.is_composed_by_all_same_events():
                             states[state.get_name()].add_transition(states[destination2.get_name()],
@@ -155,19 +157,24 @@ def find(destination, n, fault, event):
     triplets = list()
     for destination2, transitions in destination.get_neighbours().iteritems():
         for transition in transitions:
-            fault2 = fault
-            if transition.is_fault():
-                fault2 = True
-            event_cardinality = transition.get_event_cardinality()
-            if transition.is_observable() and event_cardinality <= n:
-                composed_event = deepcopy(transition.get_event())
-                composed_event.add(deepcopy(event))
-                if n == event_cardinality:
-                    triplets.append((composed_event, destination2, fault2))
-                else:
-                    triplets += find(destination2, n - event_cardinality, fault2, composed_event)
-            if not transition.is_observable():
-                triplets += find(destination2, n, fault2, event)
+            if not transition.is_crossed():
+                fault2 = fault
+                if transition.is_fault():
+                    fault2 = True
+                event_cardinality = transition.get_event_cardinality()
+                if transition.is_observable() and event_cardinality <= n:
+                    composed_event = deepcopy(transition.get_event())
+                    composed_event.add(deepcopy(event))
+                    if n == event_cardinality:
+                        triplets.append((composed_event, destination2, fault2))
+                    else:
+                        transition.set_crossed(True)
+                        triplets += find(destination2, n - event_cardinality, fault2, composed_event)
+                        transition.set_crossed(False)
+                if not transition.is_observable():
+                    transition.set_crossed(True)
+                    triplets += find(destination2, n, fault2, event)
+                    transition.set_crossed(False)
     return triplets
 
 def first_condition(ambiguous_transitions):
