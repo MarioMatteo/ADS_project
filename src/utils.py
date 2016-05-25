@@ -1,6 +1,7 @@
 from file_handler import *
 
 from copy import deepcopy
+import re
 
 def generate_bad_twin(automaton, level=1):
     states = initialize_states(automaton)
@@ -41,14 +42,16 @@ def generate_good_twin(bad_twin):
 def first_synchronize(bad_twin, good_twin):
     states = dict()
     ambiguous_transitions = set()
-    for name in good_twin.get_states():
-        couple_name = ','.join(name * 2)
+    for src_name in good_twin.get_states():
+        couple_name = ','.join(src_name * 2)
         states[couple_name] = State(couple_name)
     for src_name, src in good_twin.get_states().iteritems():
+        couple_src_name = ','.join(src_name * 2)
         for dst, transitions in src.get_neighbours().iteritems():
             dst_name = dst.get_name()
+            couple_dst_name = ','.join(dst_name * 2)
             for transition in transitions:
-                states[','.join(src_name * 2)].add_transition(states[','.join(dst_name * 2)], deepcopy(transition))
+                states[couple_src_name].add_transition(states[couple_dst_name], deepcopy(transition))
     if bad_twin.is_non_deterministic():
         bt_states = bad_twin.get_states()
         gt_states = good_twin.get_states()
@@ -61,10 +64,9 @@ def first_synchronize(bad_twin, good_twin):
                     for gt_dst, gt_transitions in gt_src.get_neighbours().iteritems():
                         for gt_transition in gt_transitions:
                             if gt_transition.get_event_name() == bt_transition.get_event_name():
-                                if (not bt_dst.equals(gt_dst)) or \
-                                        (bt_dst.equals(gt_dst) and gt_transition.is_fault() != bt_transition.is_fault()):
+                                if (not bt_dst.equals(gt_dst)) or bt_transition.is_fault():
                                     dst_name = bt_dst.get_name() + ',' + gt_dst.get_name()
-                                    sorted_dst_name = ','.join(sorted(dst_name.replace(',', '')))
+                                    sorted_dst_name = ','.join(natural_sort(dst_name.split(',')))
                                     if dst_name != sorted_dst_name:
                                         dst_name = sorted_dst_name
                                         rev_flags.add(dst_name)
@@ -78,24 +80,29 @@ def first_synchronize(bad_twin, good_twin):
                                         deepcopy(gt_transition.get_event()), ambiguous=ambiguous))
         while len(old_diff_states) > 0:
             new_diff_states = list()
-            for name in old_diff_states:
-                if name in rev_flags:
-                    bt_src, gt_src = bt_states[name.split(',')[1]], gt_states[name.split(',')[0]]
+            for src_name in old_diff_states:
+                splitted_name = src_name.split(',')
+                if src_name in rev_flags:
+                    bt_src, gt_src = bt_states[splitted_name[1]], gt_states[splitted_name[0]]
                 else:
-                    bt_src, gt_src = bt_states[name.split(',')[0]], gt_states[name.split(',')[1]]
+                    bt_src, gt_src = bt_states[splitted_name[0]], gt_states[splitted_name[1]]
                 for bt_dst, bt_transitions in bt_src.get_neighbours().iteritems():
                     for bt_transition in bt_transitions:
                         for gt_dst, gt_transitions in gt_src.get_neighbours().iteritems():
                             for gt_transition in gt_transitions:
                                 if gt_transition.get_event_name() == bt_transition.get_event_name():
-                                    dst_name = ','.join(sorted(bt_dst.get_name() + gt_dst.get_name()))
+                                    dst_name = bt_dst.get_name() + ',' + gt_dst.get_name()
+                                    sorted_dst_name = ','.join(natural_sort(dst_name.split(',')))
+                                    if dst_name != sorted_dst_name:
+                                        dst_name = sorted_dst_name
+                                        rev_flags.add(dst_name)
                                     if dst_name not in states:
                                         states[dst_name] = State(dst_name)
                                         new_diff_states.append(dst_name)
                                     ambiguous = bt_transition.is_fault()
                                     if ambiguous:
-                                        ambiguous_transitions.add((states[name], states[dst_name]))
-                                    states[name].add_transition(states[dst_name], Transition(
+                                        ambiguous_transitions.add((states[src_name], states[dst_name]))
+                                    states[src_name].add_transition(states[dst_name], Transition(
                                         deepcopy(gt_transition.get_event()), ambiguous=ambiguous))
             old_diff_states = new_diff_states
     initial_state = ','.join(good_twin.get_initial_state() * 2)
@@ -106,18 +113,18 @@ def second_synchronize(old_synchronized, ambiguous_transitions, bad_twin, level)
     twins_states = bad_twin.get_states()
     old_diff_states = list()
     rev_flags = set()
-    for src_name, src in old_synchronized.get_states().iteritems():
-        bt_src = twins_states[src_name.split(',')[0]]
-        gt_src = twins_states[src_name.split(',')[1]]
-        bt_current_level_transitions = bt_src.get_current_level_transitions(level).iteritems()
-        gt_current_level_transitions = gt_src.get_current_level_transitions(level, get_faulty=False).iteritems()
-        for bt_dst, bt_transitions in bt_current_level_transitions:
+    for src_name in old_synchronized.get_states():
+        splitted_name = src_name.split(',')
+        bt_src, gt_src = twins_states[splitted_name[0]], twins_states[splitted_name[1]]
+        bt_current_level_transitions = bt_src.get_current_level_transitions(level)
+        gt_current_level_transitions = gt_src.get_current_level_transitions(level, fault=False)
+        for bt_dst, bt_transitions in bt_current_level_transitions.iteritems():
             for bt_transition in bt_transitions:
-                for gt_dst, gt_transitions in gt_current_level_transitions:
+                for gt_dst, gt_transitions in gt_current_level_transitions.iteritems():
                     for gt_transition in gt_transitions:
                         if gt_transition.get_event_name() == bt_transition.get_event_name():
                             dst_name = bt_dst.get_name() + ',' + gt_dst.get_name()
-                            sorted_dst_name = ','.join(sorted(dst_name.replace(',', '')))
+                            sorted_dst_name = ','.join(natural_sort(dst_name.split(',')))
                             if dst_name != sorted_dst_name:
                                 dst_name = sorted_dst_name
                                 rev_flags.add(dst_name)
@@ -131,24 +138,28 @@ def second_synchronize(old_synchronized, ambiguous_transitions, bad_twin, level)
                                 deepcopy(gt_transition.get_event()), ambiguous=ambiguous))
     while len(old_diff_states) > 0:
         new_diff_states = list()
-        for name in old_diff_states:
-            if name in rev_flags:
-                bt_src, gt_src = twins_states[name.split(',')[1]], twins_states[name.split(',')[0]]
-            else:
-                bt_src, gt_src = twins_states[name.split(',')[0]], twins_states[name.split(',')[1]]
+        for src_name in old_diff_states:
+            splitted_name = src_name.split(',')
+            bt_src, gt_src = twins_states[splitted_name[0]], twins_states[splitted_name[1]]
+            if src_name in rev_flags:
+                bt_src, gt_src = gt_src, bt_src
             for bt_dst, bt_transitions in bt_src.get_neighbours().iteritems():
                 for bt_transition in bt_transitions:
-                    for gt_dst, gt_transitions in gt_src.get_neighbours().iteritems():
+                    for gt_dst, gt_transitions in gt_src.get_neighbours(fault=False).iteritems():
                         for gt_transition in gt_transitions:
                             if gt_transition.get_event_name() == bt_transition.get_event_name():
-                                dst_name = ','.join(sorted(bt_dst.get_name() + gt_dst.get_name()))
+                                dst_name = bt_dst.get_name() + ',' + gt_dst.get_name()
+                                sorted_dst_name = ','.join(natural_sort(dst_name.split(',')))
+                                if dst_name != sorted_dst_name:
+                                    dst_name = sorted_dst_name
+                                    rev_flags.add(dst_name)
                                 if dst_name not in states:
                                     states[dst_name] = State(dst_name)
                                     new_diff_states.append(dst_name)
                                 ambiguous = bt_transition.is_fault()
                                 if ambiguous:
-                                    ambiguous_transitions.add((states[name], states[dst_name]))
-                                states[name].add_transition(states[dst_name], Transition(
+                                    ambiguous_transitions.add((states[src_name], states[dst_name]))
+                                states[src_name].add_transition(states[dst_name], Transition(
                                     deepcopy(gt_transition.get_event()), ambiguous=ambiguous))
         old_diff_states = new_diff_states
     initial_state = old_synchronized.get_initial_state()
@@ -231,18 +242,18 @@ def third_method_v1(automaton, level):
         new_bad_twin = generate_bad_twin(old_bad_twin, i)
         save_automata_files(i, bad_twin=new_bad_twin)
         if not (second_condition(new_bad_twin) or third_condition(new_bad_twin)):
-            if not first_sync:
+            if first_sync:
+                good_twin = generate_good_twin(new_bad_twin)
+                synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
+                first_sync = False
+                save_automata_files(i, good_twin=good_twin, synchronized=synchronized)
+            else:
                 if last_sync_level < i - 1:
                     old_good_twin = generate_good_twin(old_bad_twin)
                     synchronized, ambiguous_transitions = first_synchronize(old_bad_twin, old_good_twin)
                     save_automata_files(i - 1, synchronized=synchronized)
                 synchronized = second_synchronize(synchronized, ambiguous_transitions, new_bad_twin, i)
                 save_automata_files(i, synchronized=synchronized)
-            else:
-                good_twin = generate_good_twin(new_bad_twin)
-                synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
-                first_sync = False
-                save_automata_files(i, good_twin=good_twin, synchronized=synchronized)
             last_sync_level = i
             if not first_condition(ambiguous_transitions):
                 for src, dst in ambiguous_transitions:
@@ -288,6 +299,13 @@ def find_loops(src, visited):
             return True
         new_visited = deepcopy(visited)
         new_visited.add(src)
+        # visited.add(src)
         if find_loops(dst, new_visited):
+        # if find_loops(dst, visited):
             return True
     return False
+
+def natural_sort(l):
+    convert = lambda text: int(text) if text.isdigit() else text.lower()
+    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
+    return sorted(l, key=alphanum_key)

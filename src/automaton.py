@@ -11,8 +11,17 @@ class State:
     def get_name(self):
         return self.name
 
-    def get_neighbours(self):
-        return self.neighbours
+    def get_neighbours(self, fault=True):
+        if fault:
+            return self.neighbours
+        neighbours = dict()
+        for neighbour, transitions in self.neighbours.iteritems():
+            _transitions = list()
+            for transition in transitions:
+                if not transition.is_fault():
+                    _transitions.append(transition)
+            neighbours[neighbour] = _transitions
+        return neighbours
 
     def set_neighbours(self, neighbours):
         self.neighbours = neighbours
@@ -60,13 +69,14 @@ class State:
                 return True
         return False
 
-    def get_current_level_transitions(self, level, get_faulty=True):
+    def get_current_level_transitions(self, level, fault=True):
         current_level_transitions = dict()
         for neighbour, transitions in self.neighbours.iteritems():
-            current_level_transitions[neighbour] = list()
+            _transitions = list()
             for transition in transitions:
-                if transition.get_event_cardinality() == level and (get_faulty or not transition.is_fault()):
-                    current_level_transitions[neighbour].append(transition)
+                if transition.get_event_cardinality() == level and (fault or not transition.is_fault()):
+                    _transitions.append(transition)
+            current_level_transitions[neighbour] = _transitions
         return current_level_transitions
 
     def equals(self, state):
@@ -123,7 +133,7 @@ class Event:
         self.multiset = Counter(name)
 
     def get_name(self):
-        return "//".join(sorted(self.multiset.elements()))
+        return '//'.join(sorted(self.multiset.elements()))
 
     def get_multiset(self):
         return self.multiset

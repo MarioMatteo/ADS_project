@@ -12,16 +12,17 @@ try:
     automaton = load_xml(automaton_file)
 except IOError:
     exit()
-#
+
 level=6
 save_img(automaton, 'Automaton', 'automaton', 'png')
 
 i = 1
-while i <= 1:
+while i <= 10:
     print '--------------'+str(i)+'--------------'
     print 'First method: ' + str(first_method(automaton, level))
-    # print 'Second method: ' + str(second_method(automaton, level))
-    # print 'Third method: ' + str(third_method_v2(automaton, level))
+    print 'Second method: ' + str(second_method(automaton, level))
+    print 'Third method (v1): ' + str(third_method_v1(automaton, level))
+    print 'Third method(v2): ' + str(third_method_v2(automaton, level))
     i += 1
 
 # i = 1
