@@ -11,20 +11,17 @@ class State:
     def get_name(self):
         return self.name
 
-    def get_neighbours(self, fault=True):
-        if fault:
-            return self.neighbours
-        neighbours = dict()
-        for neighbour, transitions in self.neighbours.iteritems():
-            _transitions = list()
-            for transition in transitions:
-                if not transition.is_fault():
-                    _transitions.append(transition)
-            neighbours[neighbour] = _transitions
-        return neighbours
-
-    def set_neighbours(self, neighbours):
-        self.neighbours = neighbours
+    def get_neighbours(self):
+        # if fault:
+        return self.neighbours
+        # neighbours = dict()
+        # for neighbour, transitions in self.neighbours.iteritems():
+        #     _transitions = list()
+        #     for transition in transitions:
+        #         if not transition.is_fault():
+        #             _transitions.append(transition)
+        #     neighbours[neighbour] = _transitions
+        # return neighbours
 
     def is_visited(self):
         return self.visited
@@ -42,7 +39,7 @@ class State:
         self.neighbours[neighbour] = transitions
 
     def add_transition(self, neighbour, transition):
-        if self.equals(neighbour) and transition.is_fault():
+        if self.equals(neighbour) and transition.is_fault() and not transition.is_observable():
             return False
         if (self.has_unobservable_transitions(neighbour) or neighbour.has_unobservable_transitions(self)) and \
                 transition.is_fault() and not transition.is_observable():

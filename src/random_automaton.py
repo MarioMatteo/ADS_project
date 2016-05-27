@@ -31,11 +31,9 @@ def generate_random_automaton(ns, nt, ne, no, nf):
         added_nt = add_minimal_transitions(states[initial_state], states, ns, nt - ns)
         random_automaton = Automaton(initial_state, states)
         cycles = get_cycles(random_automaton)
-        # print 'a'
     nt -= added_nt
     added_no = add_minimal_observable_transitions(random_automaton, event_names, cycles)
     no -= added_no
-    # print 'nt=',str(nt),' no=',str(no),' nf=',str(nf)
     while no > 0:
         if nt > nf:
             src = states[random.choice(state_names)]
@@ -44,7 +42,6 @@ def generate_random_automaton(ns, nt, ne, no, nf):
             while not src.add_transition(dst, Transition(Event(event_name))):
                 src = states[random.choice(state_names)]
                 dst = states[random.choice(state_names)]
-                # print 'b'
             event_names.pop()
             nt -= 1
         else:
@@ -52,7 +49,6 @@ def generate_random_automaton(ns, nt, ne, no, nf):
             transition = random.choice(unobservable_transitions)
             transition.set_event(Event(event_names.pop()))
         no -= 1
-    # print 'nt=', str(nt), ' no=', str(no), ' nf=', str(nf)
     while nf > 0:
         if nt > 0:
             src = states[random.choice(state_names)]
@@ -60,8 +56,6 @@ def generate_random_automaton(ns, nt, ne, no, nf):
             while not src.add_transition(dst, Transition(fault=True)):
                 src = states[random.choice(state_names)]
                 dst = states[random.choice(state_names)]
-                # print src.get_name()+'->'+dst.get_name()
-                # save_img(random_automaton, 'in loop', 'in loop', 'png', True)
             nt -= 1
         else:
             unobservable_transitions = random_automaton.get_unobservable_transitions()
@@ -79,7 +73,10 @@ def initialize_event_names(event_names, no):
     for i in range(no - len(event_names)):
         name = random.choice(event_names)
         events[name] += 1
-    result = map(lambda (name, count): [name] * count, events.iteritems())
+    result = list()
+    for name, count in events.iteritems():
+        for i in range(count):
+            result.append(name)
     random.shuffle(result)
     return result
 

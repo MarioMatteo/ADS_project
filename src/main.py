@@ -3,6 +3,8 @@ from random_automaton import *
 import Tkinter as tk
 import tkFileDialog as fileDialog
 
+level = 12
+
 root = tk.Tk()
 root.withdraw()
 
@@ -13,31 +15,29 @@ try:
 except IOError:
     exit()
 
-level=6
 save_img(automaton, 'Automaton', 'automaton', 'png')
 
-i = 1
-while i <= 10:
-    print '--------------'+str(i)+'--------------'
-    print 'First method: ' + str(first_method(automaton, level))
-    print 'Second method: ' + str(second_method(automaton, level))
-    print 'Third method (v1): ' + str(third_method_v1(automaton, level))
-    print 'Third method(v2): ' + str(third_method_v2(automaton, level))
-    i += 1
+print 'First method: ' + str(first_method(automaton, level))
+print 'Second method: ' + str(second_method(automaton, level))
+print 'Third method (v1): ' + str(third_method_v1(automaton, level))
+print 'Third method (v2): ' + str(third_method_v2(automaton, level))
 
 # i = 1
-# while i <= 1:
+# ns = 10
+# nt = 20
+# ne = 8
+# no = 13
+# nf = 1
+# while i <= 10:
 #     print '------------------'
 #     print 'AUTOMATON '+str(i)
 #     print '------------------'
-#     automaton = generate_random_automaton(2, 8, 27, 3, 0)
-#     if automaton is not None:
-#         save_img(automaton, 'Random automaton ' + str(i), 'random' + str(i), 'png')
-#         save_xml(automaton, 'random' + str(i))
-#         print 'First method: ' + str(first_method(automaton, level))
-#         # print 'Second method: ' + str(second_method(automaton, level))
-#         # print 'Third method: ' + str(third_method(automaton, level))
+#     automaton = generate_random_automaton(ns, nt, ne, no, nf)
+#     save_img(automaton, 'Random automaton ' + str(i), 'random' + str(i), 'png')
+#     save_xml(automaton, 'random' + str(i))
+#     print 'First method: ' + str(first_method(automaton, level))
+#     print 'Second method: ' + str(second_method(automaton, level))
+#     print 'Third method (v1): ' + str(third_method_v1(automaton, level))
+#     print 'Third method (v2): ' + str(third_method_v2(automaton, level))
 #     print '+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++'
 #     i += 1
-
-# save_img(load_xml('generated_automaton.xml'), 'Generated automaton', 'generated_automaton', 'png')
