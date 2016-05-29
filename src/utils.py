@@ -1,4 +1,5 @@
 from file_handler import *
+from config import *
 
 from copy import deepcopy
 import re
@@ -179,95 +180,6 @@ def second_condition(bad_twin):
 
 def third_condition(bad_twin):
     return not bad_twin.has_ambiguous_events()
-
-def first_method(automaton, level):
-    old_bad_twin = automaton
-    i = 1
-    while i <= level:
-        new_bad_twin = generate_bad_twin(old_bad_twin, i)
-        good_twin = generate_good_twin(new_bad_twin)
-        synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
-        save_automata_files(i, new_bad_twin, good_twin, synchronized)
-        for src, dst in ambiguous_transitions:
-            if find_loops(dst, set([src])):
-                return i - 1
-        old_bad_twin = new_bad_twin
-        i += 1
-    return True
-
-def second_method(automaton, level):
-    old_bad_twin = automaton
-    i = 1
-    while i <= level:
-        new_bad_twin = generate_bad_twin(old_bad_twin, i)
-        save_automata_files(i, bad_twin=new_bad_twin)
-        if not(second_condition(new_bad_twin) or third_condition(new_bad_twin)):
-            good_twin = generate_good_twin(new_bad_twin)
-            synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
-            save_automata_files(i, good_twin=good_twin, synchronized=synchronized)
-            if not first_condition(ambiguous_transitions):
-                for src, dst in ambiguous_transitions:
-                    if find_loops(dst, set([src])):
-                        return i - 1
-        old_bad_twin = new_bad_twin
-        i += 1
-    return True
-
-def third_method_v1(automaton, level):
-    old_bad_twin = automaton
-    i = 1
-    first_sync = True
-    synchronized = None
-    ambiguous_transitions = None
-    last_sync_level = 1
-    while i <= level:
-        new_bad_twin = generate_bad_twin(old_bad_twin, i)
-        save_automata_files(i, bad_twin=new_bad_twin)
-        if not (second_condition(new_bad_twin) or third_condition(new_bad_twin)):
-            if first_sync:
-                good_twin = generate_good_twin(new_bad_twin)
-                synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
-                first_sync = False
-                save_automata_files(i, good_twin=good_twin, synchronized=synchronized)
-            else:
-                if last_sync_level < i - 1:
-                    old_good_twin = generate_good_twin(old_bad_twin)
-                    synchronized, ambiguous_transitions = first_synchronize(old_bad_twin, old_good_twin)
-                    save_automata_files(i - 1, synchronized=synchronized)
-                synchronized = second_synchronize(synchronized, ambiguous_transitions, new_bad_twin, i)
-                save_automata_files(i, synchronized=synchronized)
-            last_sync_level = i
-            if not first_condition(ambiguous_transitions):
-                for src, dst in ambiguous_transitions:
-                    if find_loops(dst, set([src])):
-                        return i - 1
-        old_bad_twin = new_bad_twin
-        i += 1
-    return True
-
-def third_method_v2(automaton, level):
-    old_bad_twin = automaton
-    i = 1
-    synchronized = None
-    ambiguous_transitions = None
-    while i <= level:
-        new_bad_twin = generate_bad_twin(old_bad_twin, i)
-        save_automata_files(i, bad_twin=new_bad_twin)
-        if i == 1:
-            good_twin = generate_good_twin(new_bad_twin)
-            synchronized, ambiguous_transitions = first_synchronize(new_bad_twin, good_twin)
-            save_automata_files(i, good_twin=good_twin, synchronized=synchronized)
-        else:
-            synchronized = second_synchronize(synchronized, ambiguous_transitions, new_bad_twin, i)
-            save_automata_files(i, synchronized=synchronized)
-        if not (second_condition(new_bad_twin) or third_condition(new_bad_twin)):
-            if not first_condition(ambiguous_transitions):
-                for src, dst in ambiguous_transitions:
-                    if find_loops(dst, set([src])):
-                        return i - 1
-        old_bad_twin = new_bad_twin
-        i += 1
-    return True
 
 def initialize_states(automaton):
     states = dict()

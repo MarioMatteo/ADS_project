@@ -1,0 +1,43 @@
+[DIAGNOSABILITY TASK]
+;diagnosability level to check
+;values: an integer
+level=10
+
+;method to use in order to check diagnosability level
+;values: 1|2|3v1|3v2|all
+method=3v1
+
+
+[INTERMEDIATE RESULTS]
+;whether to save intermediate results such as automaton structural description (xml) and graphical representation
+;(according to format parameter)
+;values: yes|no
+save=no
+
+;whether to save source files from which graphical representation is created
+;values: yes|no
+save_source=no
+
+;whether to render transitions in compact mode or in complete mode
+;values: yes|no
+compact=yes
+
+
+[RANDOM AUTOMATON GENERATION]
+;number of automata to generate
+;n=3
+
+;number of states
+ns=10
+
+;max number of transitions
+nt=15
+
+;cardinality of events alphabet
+ne=8
+
+;number of observable transitions
+no=9
+
+;number of fault transitions
+nf=2

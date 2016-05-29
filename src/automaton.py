@@ -1,5 +1,4 @@
 from collections import Counter
-import types
 
 class State:
 
@@ -12,16 +11,7 @@ class State:
         return self.name
 
     def get_neighbours(self):
-        # if fault:
         return self.neighbours
-        # neighbours = dict()
-        # for neighbour, transitions in self.neighbours.iteritems():
-        #     _transitions = list()
-        #     for transition in transitions:
-        #         if not transition.is_fault():
-        #             _transitions.append(transition)
-        #     neighbours[neighbour] = _transitions
-        # return neighbours
 
     def is_visited(self):
         return self.visited
@@ -52,17 +42,17 @@ class State:
             return False
         return True
 
+    def transition_already_present(self, neighbour, _transition):
+        for transition in self.neighbours[neighbour]:
+            if transition.get_event_name() == _transition.get_event_name() and transition.is_fault() == _transition.is_fault():
+                return True
+        return False
+
     def has_unobservable_transitions(self, neighbour):
         if neighbour not in self.neighbours:
             return False
         for transition in self.neighbours[neighbour]:
             if not transition.is_observable():
-                return True
-        return False
-
-    def transition_already_present(self, neighbour, _transition):
-        for transition in self.neighbours[neighbour]:
-            if transition.get_event_name() == _transition.get_event_name() and transition.is_fault() == _transition.is_fault():
                 return True
         return False
 
@@ -125,7 +115,7 @@ class Transition:
 class Event:
 
     def __init__(self, name=None):
-        if type(name) is types.StringType:
+        if type(name) is str:
             name = [name]
         self.multiset = Counter(name)
 
@@ -138,7 +128,7 @@ class Event:
     def add(self, event):
         if event is not None:
             for _event in event.multiset.elements():
-                if type(_event) is types.StringType:
+                if type(_event) is str:
                     _event = [_event]
                 self.multiset.update(_event)
 
@@ -160,6 +150,9 @@ class Automaton:
 
     def get_states(self):
         return self.states
+
+    def set_states(self, states):
+        self.states = states
 
     def find_reachable_states(self, initial_state):
         initial_state.set_visited()
@@ -203,11 +196,12 @@ class Automaton:
                         events[transition.get_event_name()] = transition.is_fault()
         return False
 
-    def get_transitions(self):
+    def get_transitions(self, unobservable=False):
         transitions = list()
         for state in self.states.values():
             for neighbour in state.get_neighbours():
-                transitions.append((state.get_name(), neighbour.get_name()))
+                if not unobservable or state.has_unobservable_transitions(neighbour):
+                    transitions.append((state.get_name(), neighbour.get_name()))
         return transitions
 
     def set_transition_event(self, src_name, dst_name, event):

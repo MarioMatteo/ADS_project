@@ -24,15 +24,15 @@ def generate_random_automaton(ns, nt, ne, no, nf):
     event_names = initialize_event_names(event_names, no)
     initial_state = random.choice(state_names)
     added_nt = add_minimal_transitions(states[initial_state], states, ns, nt - ns)
-    random_automaton = Automaton(initial_state, states)
-    cycles = get_cycles(random_automaton)
-    while len(cycles) > no:
-        states = initialize_states(random_automaton)
+    automaton = Automaton(initial_state, states)
+    loops = get_loops(automaton)
+    while len(loops) > no:
+        states = initialize_states(automaton)
         added_nt = add_minimal_transitions(states[initial_state], states, ns, nt - ns)
-        random_automaton = Automaton(initial_state, states)
-        cycles = get_cycles(random_automaton)
+        automaton = Automaton(initial_state, states)
+        loops = get_loops(automaton)
     nt -= added_nt
-    added_no = add_minimal_observable_transitions(random_automaton, event_names, cycles)
+    added_no = add_minimal_observable_transitions(automaton, event_names, loops)
     no -= added_no
     while no > 0:
         if nt > nf:
@@ -45,26 +45,64 @@ def generate_random_automaton(ns, nt, ne, no, nf):
             event_names.pop()
             nt -= 1
         else:
-            unobservable_transitions = random_automaton.get_unobservable_transitions()
+            unobservable_transitions = automaton.get_unobservable_transitions()
             transition = random.choice(unobservable_transitions)
             transition.set_event(Event(event_names.pop()))
         no -= 1
-    while nf > 0:
-        if nt > 0:
-            src = states[random.choice(state_names)]
-            dst = states[random.choice(state_names)]
-            while not src.add_transition(dst, Transition(fault=True)):
+    # prev_nf = nf
+    # prev_nt = nt
+    # save_img(automaton, 'temp', 'temp', 'png', True)
+    # prev_automaton = deepcopy(automaton)
+    # while True:
+    #     nf = prev_nf
+    #     nt = prev_nt
+    #     states = prev_automaton.get_states()
+    #     automaton.set_states(states)
+    #     while nf > 0:
+    #         if nt > 0:
+    #             src = states[random.choice(state_names)]
+    #             dst = states[random.choice(state_names)]
+    #             while not src.add_transition(dst, Transition(fault=True)):
+    #                 src = states[random.choice(state_names)]
+    #                 dst = states[random.choice(state_names)]
+    #                 print src.get_name()+'->'+dst.get_name()
+    #             nt -= 1
+    #             automaton.set_states(states)
+    #         else:
+    #             unobservable_transitions = automaton.get_unobservable_transitions()
+    #             if len(unobservable_transitions) > 0:
+    #                 transition = random.choice(unobservable_transitions)
+    #                 transition.set_fault()
+    #         nf -= 1
+    #     if not has_fault_loops(automaton):
+    #         break
+    prev_nt = nt
+    prev_nf = nf
+    prev_automaton = automaton
+    while True:
+        nt = prev_nt
+        nf = prev_nf
+        automaton = deepcopy(prev_automaton)
+        states = automaton.get_states()
+        while nf > 0:
+            if nt > 0:
                 src = states[random.choice(state_names)]
                 dst = states[random.choice(state_names)]
-            nt -= 1
-        else:
-            unobservable_transitions = random_automaton.get_unobservable_transitions()
-            transition = random.choice(unobservable_transitions)
-            transition.set_fault()
-        nf -= 1
-    for state in random_automaton.get_states().values():
+                while not src.add_transition(dst, Transition(fault=True)):
+                    src = states[random.choice(state_names)]
+                    dst = states[random.choice(state_names)]
+                nt -= 1
+                automaton.set_states(states)
+            else:
+                unobservable_transitions = automaton.get_unobservable_transitions()
+                transition = random.choice(unobservable_transitions)
+                transition.set_fault()
+            nf -= 1
+        if not has_fault_loops(automaton):
+            break
+    for state in automaton.get_states().values():
         state.set_visited(False)
-    return random_automaton
+    return automaton
 
 def initialize_event_names(event_names, no):
     events = dict()
@@ -110,10 +148,10 @@ def add_minimal_transitions(src, states, ns, nl):
     src.add_transition(dst, Transition())
     return 1 + add_minimal_transitions(dst, states, ns - 1, nl)
 
-def add_minimal_observable_transitions(automaton, event_names, cycles):
+def add_minimal_observable_transitions(automaton, event_names, loops):
     count = 0
-    while len(cycles) > 0:
-        cycle = cycles.pop(0)
+    while len(loops) > 0:
+        cycle = loops.pop(0)
         if len(cycle) == 1:
             src_name = cycle[0]
             dst_name = src_name
@@ -127,5 +165,8 @@ def add_minimal_observable_transitions(automaton, event_names, cycles):
             count += 1
     return count
 
-def get_cycles(automaton):
+def get_loops(automaton):
     return sorted(list(nx.simple_cycles(nx.DiGraph(automaton.get_transitions()))), key=len)
+
+def has_fault_loops(automaton):
+    return len(list(nx.simple_cycles(nx.DiGraph(automaton.get_transitions(unobservable=True))))) > 0

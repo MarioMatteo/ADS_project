@@ -56,7 +56,7 @@ def save_xml(automaton, filename):
     xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(encoding='utf-8')
     save_file('xmls/' + filename + '.xml', xmlstr)
 
-def save_img(automaton, title, file_name, _format, verbose=False):
+def save_img(automaton, title, file_name, _format, compact=False, save_source=False):
     dot = Digraph(name=file_name, format=_format, graph_attr={'rankdir': 'LR'})
     dot.body.append('graph [fontname="verdana", labelloc="t", label="'+title+'"]')
     dot.body.append('node [fontname="verdana", fillcolor="#4f81bd", fontcolor="white", '
@@ -71,7 +71,7 @@ def save_img(automaton, title, file_name, _format, verbose=False):
         src = state.get_name().replace(',', '')
         for neighbour, transitions in state.get_neighbours().iteritems():
             dst = neighbour.get_name().replace(',', '')
-            if verbose:
+            if not compact:
                 for transition in transitions:
                     if transition.is_fault():
                         if transition.is_observable():
@@ -112,7 +112,6 @@ def save_img(automaton, title, file_name, _format, verbose=False):
                 if '+' in events:
                     events = ''.join(events.rsplit('+', 1))
                 events += '>'
-                # print events
                 if fault:
                     dot.edge(src, dst, label=events, _attributes={'color': 'red'})
                 elif ambiguous:
@@ -121,7 +120,7 @@ def save_img(automaton, title, file_name, _format, verbose=False):
                     dot.edge(src, dst, _attributes={'color': 'gray65'})
                 else:
                     dot.edge(src, dst, label=events)
-    dot.render('imgs/' + file_name, cleanup=not verbose, view=False)
+    dot.render('imgs/' + file_name, cleanup=not save_source, view=False)
 
 def save_file(filename, content):
     if not os.path.exists(os.path.dirname(filename)):
