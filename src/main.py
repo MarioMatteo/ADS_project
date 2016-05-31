@@ -12,7 +12,8 @@ def first_method(automaton, level):
     save_source = params['save_source']
     old_bad_twin = automaton
     i = 1
-    global status_text, root
+    global status_bar, status_text, root
+    status_bar.config(fg='blue')
     while i <= level:
         status_text.set('Method 1: generating bad twin of level ' + str(i) + '...')
         root.update_idletasks()
@@ -29,7 +30,7 @@ def first_method(automaton, level):
             save_automata_files(i, compact, save_source, new_bad_twin, good_twin, synchronized)
         for src_name, dst_name in ambiguous_transitions:
             states = synchronized.get_states()
-            if find_loops(states[dst_name], set([states[src_name]])):
+            if find_loops(states[dst_name], set([src_name])):
                 return i - 1
         old_bad_twin = new_bad_twin
         i += 1
@@ -42,7 +43,8 @@ def second_method(automaton, level):
     save_source = params['save_source']
     old_bad_twin = automaton
     i = 1
-    global status_text, root
+    global status_bar, status_text, root
+    status_bar.config(fg='blue')
     while i <= level:
         status_text.set('Method 2: generating bad twin of level ' + str(i) + '...')
         root.update_idletasks()
@@ -65,7 +67,7 @@ def second_method(automaton, level):
             if not first_condition(ambiguous_transitions):
                 for src_name, dst_name in ambiguous_transitions:
                     states = synchronized.get_states()
-                    if find_loops(states[dst_name], set([states[src_name]])):
+                    if find_loops(states[dst_name], set([src_name])):
                         return i - 1
         old_bad_twin = new_bad_twin
         i += 1
@@ -78,7 +80,8 @@ def third_method_v1(automaton, level):
     save_source = params['save_source']
     old_bad_twin = automaton
     i = 1
-    global status_text, root
+    global status_bar, status_text, root
+    status_bar.config(fg='blue')
     first_sync = True
     synchronized = None
     ambiguous_transitions = None
@@ -127,7 +130,7 @@ def third_method_v1(automaton, level):
             if not first_condition(ambiguous_transitions):
                 for src_name, dst_name in ambiguous_transitions:
                     states = synchronized.get_states()
-                    if find_loops(states[dst_name], set([states[src_name]])):
+                    if find_loops(states[dst_name], set([src_name])):
                         return i - 1
         old_bad_twin = new_bad_twin
         i += 1
@@ -140,7 +143,8 @@ def third_method_v2(automaton, level):
     save_source = params['save_source']
     old_bad_twin = automaton
     i = 1
-    global status_text, root
+    global status_bar, status_text, root
+    status_bar.config(fg='blue')
     synchronized = None
     ambiguous_transitions = None
     while i <= level:
@@ -172,10 +176,9 @@ def third_method_v2(automaton, level):
                 save_automata_files(i, compact, save_source, synchronized=synchronized)
         if not (second_condition(new_bad_twin) or third_condition(new_bad_twin)):
             if not first_condition(ambiguous_transitions):
-                # print str(i)
                 for src_name, dst_name in ambiguous_transitions:
                     states = synchronized.get_states()
-                    if find_loops(states[dst_name], set([states[src_name]])):
+                    if find_loops(states[dst_name], set([src_name])):
                         return i - 1
         old_bad_twin = new_bad_twin
         i += 1
@@ -189,15 +192,17 @@ def load():
             params = read_params()
             compact = params['compact']
             save_source = params['save_source']
-            global automaton, canvas, run_menu, status_text, result_label
+            global automaton, canvas, run_menu, status_bar, status_text, result_label
             if canvas is not None:
                 canvas.destroy()
+            status_bar.config(fg='blue')
             status_text.set('Loading automaton from file...')
             root.update_idletasks()
             automaton = load_xml(automaton_file)
-            if automaton is None:
+            if type(automaton) is str:
                 run_menu.entryconfig(1, state=DISABLED)
-                status_text.set('Invalid xml syntax!')
+                status_bar.config(fg='red')
+                status_text.set(automaton)
                 root.update_idletasks()
                 result_label['text'] = ''
                 return
@@ -228,6 +233,7 @@ def generate():
     global automaton, canvas, run_menu, status_text, result_label, root
     if canvas is not None:
         canvas.destroy()
+    status_bar.config(fg='blue')
     status_text.set('Generating a random automaton...')
     root.update_idletasks()
     automaton = generate_random_automaton(ns, nt, ne, no, nf)
@@ -238,20 +244,20 @@ def generate():
     save_img(automaton, 'Random automaton', 'random', compact, save_source)
     save_xml(automaton, 'random')
     image = ImageTk.PhotoImage(Image.open('imgs/random.png'))
-    if image.width() < root.winfo_width():
+    if image.width() < root.winfo_width() and image.height() < root.winfo_height() - 30:
         canvas = Canvas(root)
         canvas.pack(expand=YES, fill=BOTH)
         canvas.img = image
         canvas.create_image((root.winfo_width() - image.width()) / 2, 0, image=image, anchor=NW)
     else:
-        button = Button(root, text='Display automaton', command=lambda: display_image('random.png'))
-        button.place(relx=.5, rely=.5)
+        button = Button(root, text='Display automaton', command=lambda: display_image('random.png'), font=('', 16))
+        button.place(relx=.45, rely=.5)
 
 def check_diagnosability_level():
     params = read_params()
     level = params['level']
     method = params['method']
-    global automaton, status_text, result_label
+    global automaton, status_bar, status_text, result_label
     result_label['text'] = ''
     def get_text_result(method, result):
         if type(result) is bool:
@@ -278,6 +284,7 @@ def check_diagnosability_level():
         for method, result in zip([1, 2, '3v1', '3v2'], [result1, result2, result3v1, result3v2]):
             text_results.append(get_text_result(method, result))
         result_label['text'] = '\n'.join(text_results)
+    status_bar.config(fg='blue')
     status_text.set('Done!')
 
 def edit():
@@ -314,8 +321,8 @@ run_menu.entryconfig(1, state=DISABLED)
 menu_bar.add_cascade(label='Run', menu=run_menu)
 root.config(menu=menu_bar)
 status_text = StringVar(value='Ready')
-status_bar = Label(root, textvariable=status_text, bd=1, relief=SUNKEN, anchor=W, font=13, fg='blue')
+status_bar = Label(root, textvariable=status_text, bd=1, relief=SUNKEN, anchor=W, font=('', 16), fg='blue')
 status_bar.pack(side=BOTTOM, fill=X)
-result_label = Label(root, anchor=W, font=14)
+result_label = Label(root, justify=LEFT, anchor=W, font=('', 16))
 result_label.pack(side=BOTTOM, fill=X)
 root.mainloop()

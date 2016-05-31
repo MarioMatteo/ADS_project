@@ -1,7 +1,7 @@
 [DIAGNOSABILITY TASK]
 ;diagnosability level to check
 ;values: an integer
-level=8
+level=10
 
 ;method to use in order to check diagnosability level
 ;values: 1|2|3v1|3v2|all
@@ -27,16 +27,16 @@ compact=yes
 ;n=3
 
 ;number of states
-ns=7
+ns=15
 
 ;max number of transitions
-nt=10
+nt=25
 
 ;cardinality of events alphabet
-ne=2
+ne=10
 
 ;number of observable transitions
-no=9
+no=15
 
 ;number of fault transitions
-nf=1
+nf=2

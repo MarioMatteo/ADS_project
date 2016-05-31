@@ -180,14 +180,15 @@ def find_loops(src, visited):
     # print 'expanding '+src.get_name()+' '+str(len(src.get_neighbours()))
     for dst in src.get_neighbours():
         # print 'visiting '+dst.get_name()+' ('+src.get_name()+')'
-        if dst in visited:
+        if dst.get_name() in visited:
             # print dst.get_name()+' ('+src.get_name()+') already visited'
             return True
-        # visited.add(src)
-        new_visited = deepcopy(visited)
-        new_visited.add(src)
-        # if find_loops(dst, visited):
-        if find_loops(dst, new_visited):
+        visited.add(src.get_name())
+        # new_visited = deepcopy(visited)
+        # print 'visited '+src.get_name()
+        # new_visited.add(src.get_name())
+        if find_loops(dst, visited):
+        # if find_loops(dst, new_visited):
             # print 'backtracking true'
             return True
     # print 'backtracking false'

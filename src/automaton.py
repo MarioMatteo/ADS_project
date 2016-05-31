@@ -1,4 +1,5 @@
 from collections import Counter
+import networkx as nx
 
 class State:
 
@@ -54,6 +55,14 @@ class State:
     def transition_already_present(self, neighbour, _transition):
         for transition in self.neighbours[neighbour]:
             if transition.get_event_name() == _transition.get_event_name() and transition.is_fault() == _transition.is_fault():
+                return True
+        return False
+
+    def has_observable_transitions(self, neighbour):
+        if neighbour not in self.neighbours:
+            return False
+        for transition in self.neighbours[neighbour]:
+            if transition.is_observable():
                 return True
         return False
 
@@ -193,6 +202,30 @@ class Automaton:
                             events[transition.get_event_name()] = True
         return False
 
+    def is_language_alive(self):
+        for state in self.states.values():
+            if len(state.get_neighbours()) == 0:
+                return False
+        loops = self.get_loops()
+        for loop in loops:
+            if len(loops) == 1:
+                src_name = loop[0]
+                if not self.states[src_name].has_observable_transitions(self.states[src_name]):
+                    return False
+            else:
+                _continue = True
+                src_index = 0
+                while src_index < len(loop) and _continue:
+                    src_name = loop[src_index]
+                    dst_index = (src_index + 1) % len(loop)
+                    dst_name = loop[dst_index]
+                    if self.states[src_name].has_observable_transitions(self.states[dst_name]):
+                        _continue = False
+                    src_index += 1
+                if _continue:
+                    return False
+        return True
+
     def has_ambiguous_events(self):
         events = dict()
         for state in self.states.values():
@@ -230,3 +263,9 @@ class Automaton:
                     if not transition.is_observable() and not transition.is_fault():
                         unobservable_transitions.append(transition)
         return unobservable_transitions
+
+    def get_loops(self):
+        return sorted(list(nx.simple_cycles(nx.DiGraph(self.get_transitions()))), key=len)
+
+    def has_fault_loops(self):
+        return len(list(nx.simple_cycles(nx.DiGraph(self.get_transitions(unobservable=True))))) > 0

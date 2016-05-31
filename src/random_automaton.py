@@ -1,6 +1,5 @@
 from utils import *
 import string, random
-import networkx as nx
 
 def generate_random_automaton(ns, nt, ne, no, nf):
     states = dict()
@@ -18,12 +17,12 @@ def generate_random_automaton(ns, nt, ne, no, nf):
     initial_state = random.choice(state_names)
     added_nt = add_minimal_transitions(states[initial_state], states, ns, nt - ns)
     automaton = Automaton(initial_state, states)
-    loops = get_loops(automaton)
+    loops = automaton.get_loops()
     while len(loops) > no:
         states = initialize_states(automaton)
         added_nt = add_minimal_transitions(states[initial_state], states, ns, nt - ns)
         automaton = Automaton(initial_state, states)
-        loops = get_loops(automaton)
+        loops = automaton.get_loops()
     nt -= added_nt
     added_no = add_minimal_observable_transitions(automaton, event_names, loops)
     no -= added_no
@@ -64,7 +63,7 @@ def generate_random_automaton(ns, nt, ne, no, nf):
                 transition = random.choice(unobservable_transitions)
                 transition.set_fault()
             nf -= 1
-        if not has_fault_loops(automaton):
+        if not automaton.has_fault_loops():
             break
     for state in automaton.get_states().values():
         state.set_visited(False)
@@ -117,22 +116,16 @@ def add_minimal_transitions(src, states, ns, nl):
 def add_minimal_observable_transitions(automaton, event_names, loops):
     count = 0
     while len(loops) > 0:
-        cycle = loops.pop(0)
-        if len(cycle) == 1:
-            src_name = cycle[0]
+        loop = loops.pop(0)
+        if len(loop) == 1:
+            src_name = loop[0]
             dst_name = src_name
         else:
-            src_name = random.choice(cycle)
-            dst_index = (cycle.index(src_name) + 1) % len(cycle)
-            dst_name = cycle[dst_index]
+            src_name = random.choice(loop)
+            dst_index = (loop.index(src_name) + 1) % len(loop)
+            dst_name = loop[dst_index]
         event_name = event_names[-1]
         if automaton.set_transition_event(src_name, dst_name, Event(event_name)):
             event_names.pop()
             count += 1
     return count
-
-def get_loops(automaton):
-    return sorted(list(nx.simple_cycles(nx.DiGraph(automaton.get_transitions()))), key=len)
-
-def has_fault_loops(automaton):
-    return len(list(nx.simple_cycles(nx.DiGraph(automaton.get_transitions(unobservable=True))))) > 0
