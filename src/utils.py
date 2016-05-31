@@ -1,8 +1,5 @@
 from file_handler import *
-from config import *
-
 from copy import deepcopy
-import re
 
 def generate_bad_twin(automaton, level=1):
     states = initialize_states(automaton)
@@ -57,46 +54,42 @@ def first_synchronize(bad_twin, good_twin):
         bt_states = bad_twin.get_states()
         gt_states = good_twin.get_states()
         prev_states = set(states.keys())
-        for gt_src_name in gt_states:
+        for gt_src_name, gt_src in gt_states.iteritems():
             src_name = ','.join([gt_src_name] * 2)
             bt_src = bt_states[gt_src_name]
             for bt_dst, bt_transitions in bt_src.get_neighbours().iteritems():
-                for gt_dst, gt_transitions in bt_src.get_neighbours().iteritems():
+                for gt_dst, gt_transitions in gt_src.get_neighbours().iteritems():
                     for bt_transition in bt_transitions:
                         for gt_transition in gt_transitions:
-                            if (bt_transition.get_event_name() == gt_transition.get_event_name()) and \
-                                    not (bt_transition.is_fault() and gt_transition.is_fault()):
-                                if not bt_dst.equals(gt_dst) or bt_transition.is_fault() != gt_transition.is_fault():
-                                    dst_name = ','.join(natural_sort([bt_dst.get_name(), gt_dst.get_name()]))
-                                    rev_dst_name = ','.join(reversed(dst_name.split(',')))
-                                    if dst_name not in states and rev_dst_name not in states:
+                            if bt_transition.get_event_name() == gt_transition.get_event_name():
+                                if not bt_dst.equals(gt_dst) or bt_transition.is_fault():
+                                    dst_name = ','.join([bt_dst.get_name(), gt_dst.get_name()])
+                                    if dst_name not in states:
                                         states[dst_name] = State(dst_name)
-                                    ambiguous = bt_transition.is_fault() != gt_transition.is_fault()
-                                    if ambiguous:
-                                        ambiguous_transitions.add((states[src_name], states[dst_name]))
+                                    ambiguous = bt_transition.is_fault()
                                     states[src_name].add_transition(states[dst_name], Transition(
                                         deepcopy(bt_transition.get_event()), ambiguous=ambiguous))
+                                    if ambiguous:
+                                        ambiguous_transitions.add((src_name, dst_name))
         while set(states.keys()) != prev_states:
             diff_states = set(states.keys()) - prev_states
             prev_states = set(states.keys())
             for src_name in diff_states:
                 splitted_name = src_name.split(',')
-                bt_src, gt_src = bt_states[splitted_name[0]], bt_states[splitted_name[1]]
+                bt_src, gt_src = bt_states[splitted_name[0]], gt_states[splitted_name[1]]
                 for bt_dst, bt_transitions in bt_src.get_neighbours().iteritems():
                     for gt_dst, gt_transitions in gt_src.get_neighbours().iteritems():
                         for bt_transition in bt_transitions:
                             for gt_transition in gt_transitions:
-                                if (bt_transition.get_event_name() == gt_transition.get_event_name()) and \
-                                        not (bt_transition.is_fault() and gt_transition.is_fault()):
-                                    dst_name = ','.join(natural_sort([bt_dst.get_name(), gt_dst.get_name()]))
-                                    rev_dst_name = ','.join(reversed(dst_name.split(',')))
-                                    if dst_name not in states and rev_dst_name not in states:
+                                if bt_transition.get_event_name() == gt_transition.get_event_name():
+                                    dst_name = ','.join([bt_dst.get_name(), gt_dst.get_name()])
+                                    if dst_name not in states:
                                         states[dst_name] = State(dst_name)
-                                    ambiguous = bt_transition.is_fault() != gt_transition.is_fault()
-                                    if ambiguous:
-                                        ambiguous_transitions.add((states[src_name], states[dst_name]))
+                                    ambiguous = bt_transition.is_fault()
                                     states[src_name].add_transition(states[dst_name], Transition(
                                         deepcopy(bt_transition.get_event()), ambiguous=ambiguous))
+                                    if ambiguous:
+                                        ambiguous_transitions.add((src_name, dst_name))
     initial_state = ','.join([good_twin.get_initial_state()] * 2)
     return Automaton(initial_state, states), ambiguous_transitions
 
@@ -108,22 +101,20 @@ def second_synchronize(old_synchronized, ambiguous_transitions, bad_twin, level)
         splitted_name = src_name.split(',')
         bt_src, gt_src = bt_states[splitted_name[0]], bt_states[splitted_name[1]]
         bt_current_level_transitions = bt_src.get_current_level_transitions(level)
-        gt_current_level_transitions = gt_src.get_current_level_transitions(level)
+        gt_current_level_transitions = gt_src.get_current_level_transitions(level, fault=False)
         for bt_dst, bt_transitions in bt_current_level_transitions.iteritems():
             for gt_dst, gt_transitions in gt_current_level_transitions.iteritems():
                 for bt_transition in bt_transitions:
                     for gt_transition in gt_transitions:
-                        if bt_transition.get_event_name() == gt_transition.get_event_name() and \
-                                not (bt_transition.is_fault() and gt_transition.is_fault()):
-                            dst_name = ','.join(natural_sort([bt_dst.get_name(), gt_dst.get_name()]))
-                            rev_dst_name = ','.join(reversed(dst_name.split(',')))
-                            if dst_name not in states and rev_dst_name not in states:
+                        if bt_transition.get_event_name() == gt_transition.get_event_name():
+                            dst_name = ','.join([bt_dst.get_name(), gt_dst.get_name()])
+                            if dst_name not in states:
                                 states[dst_name] = State(dst_name)
-                            ambiguous = bt_transition.is_fault() != gt_transition.is_fault()
-                            if ambiguous:
-                                ambiguous_transitions.add((states[src_name], states[dst_name]))
+                            ambiguous = bt_transition.is_fault()
                             states[src_name].add_transition(states[dst_name], Transition(
                                 deepcopy(bt_transition.get_event()), ambiguous=ambiguous))
+                            if ambiguous:
+                                ambiguous_transitions.add((src_name, dst_name))
     while set(states.keys()) != prev_states:
         diff_states = set(states.keys()) - prev_states
         prev_states = set(states.keys())
@@ -131,20 +122,18 @@ def second_synchronize(old_synchronized, ambiguous_transitions, bad_twin, level)
             splitted_name = src_name.split(',')
             bt_src, gt_src = bt_states[splitted_name[0]], bt_states[splitted_name[1]]
             for bt_dst, bt_transitions in bt_src.get_neighbours().iteritems():
-                for gt_dst, gt_transitions in gt_src.get_neighbours().iteritems():
+                for gt_dst, gt_transitions in gt_src.get_neighbours(fault=False).iteritems():
                     for bt_transition in bt_transitions:
                         for gt_transition in gt_transitions:
-                            if bt_transition.get_event_name() == gt_transition.get_event_name() and \
-                                    not (bt_transition.is_fault() and gt_transition.is_fault()):
-                                dst_name = ','.join(natural_sort([bt_dst.get_name(), gt_dst.get_name()]))
-                                rev_dst_name = ','.join(reversed(dst_name.split(',')))
-                                if dst_name not in states and rev_dst_name not in states:
+                            if bt_transition.get_event_name() == gt_transition.get_event_name():
+                                dst_name = ','.join([bt_dst.get_name(), gt_dst.get_name()])
+                                if dst_name not in states:
                                     states[dst_name] = State(dst_name)
-                                ambiguous = bt_transition.is_fault() != gt_transition.is_fault()
-                                if ambiguous:
-                                    ambiguous_transitions.add((states[src_name], states[dst_name]))
+                                ambiguous = bt_transition.is_fault()
                                 states[src_name].add_transition(states[dst_name], Transition(
                                     deepcopy(bt_transition.get_event()), ambiguous=ambiguous))
+                                if ambiguous:
+                                    ambiguous_transitions.add((src_name, dst_name))
     initial_state = old_synchronized.get_initial_state()
     return Automaton(initial_state, states)
 
@@ -188,18 +177,18 @@ def initialize_states(automaton):
     return states
 
 def find_loops(src, visited):
+    # print 'expanding '+src.get_name()+' '+str(len(src.get_neighbours()))
     for dst in src.get_neighbours():
+        # print 'visiting '+dst.get_name()+' ('+src.get_name()+')'
         if dst in visited:
+            # print dst.get_name()+' ('+src.get_name()+') already visited'
             return True
-        # new_visited = deepcopy(visited)
-        # new_visited.add(src)
-        visited.add(src)
-        # if find_loops(dst, new_visited):
-        if find_loops(dst, visited):
+        # visited.add(src)
+        new_visited = deepcopy(visited)
+        new_visited.add(src)
+        # if find_loops(dst, visited):
+        if find_loops(dst, new_visited):
+            # print 'backtracking true'
             return True
+    # print 'backtracking false'
     return False
-
-def natural_sort(l):
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]
-    return sorted(l, key=alphanum_key)

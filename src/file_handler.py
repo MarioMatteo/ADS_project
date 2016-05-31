@@ -1,11 +1,18 @@
 from automaton import *
-
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from lxml import etree
 from graphviz import Digraph
 import os
 
 def load_xml(filepath):
+    try:
+        doc = etree.parse(filepath)
+        xsd = etree.parse("schema.xsd")
+        xmlschema = etree.XMLSchema(xsd)
+        xmlschema.assertValid(doc)
+    except (etree.XMLSyntaxError, etree.DocumentInvalid):
+        return None
     tree = ET.parse(filepath)
     root = tree.getroot()
     states = dict()
@@ -56,8 +63,8 @@ def save_xml(automaton, filename):
     xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(encoding='utf-8')
     save_file('xmls/' + filename + '.xml', xmlstr)
 
-def save_img(automaton, title, file_name, _format, compact=False, save_source=False):
-    dot = Digraph(name=file_name, format=_format, graph_attr={'rankdir': 'LR'})
+def save_img(automaton, title, file_name, compact, save_source):
+    dot = Digraph(name=file_name, format='png', graph_attr={'rankdir': 'LR'})
     dot.body.append('graph [fontname="verdana", labelloc="t", label="'+title+'"]')
     dot.body.append('node [fontname="verdana", fillcolor="#4f81bd", fontcolor="white", '
                     'style="filled, solid", color="#385d8a", penwidth="2"]')
@@ -128,13 +135,13 @@ def save_file(filename, content):
     with open(filename, 'w') as f:
         f.write(content)
 
-def save_automata_files(level, bad_twin=None, good_twin=None, synchronized=None, verbose=False):
+def save_automata_files(level, compact, save_source, bad_twin=None, good_twin=None, synchronized=None):
     if bad_twin is not None:
         save_xml(bad_twin, "b" + str(level))
-        save_img(bad_twin, "Bad twin - Level " + str(level), "b" + str(level), "png", verbose)
+        save_img(bad_twin, "Bad twin - Level " + str(level), "b" + str(level), compact, save_source)
     if good_twin is not None:
         save_xml(good_twin, "g" + str(level))
-        save_img(good_twin, "Good twin - Level " + str(level), "g" + str(level), "png", verbose)
+        save_img(good_twin, "Good twin - Level " + str(level), "g" + str(level), compact, save_source)
     if synchronized is not None:
         save_xml(synchronized, "s" + str(level))
-        save_img(synchronized, "Synchronized - Level " + str(level), "s" + str(level), "png", verbose)
+        save_img(synchronized, "Synchronized - Level " + str(level), "s" + str(level), compact, save_source)

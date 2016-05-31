@@ -10,8 +10,17 @@ class State:
     def get_name(self):
         return self.name
 
-    def get_neighbours(self):
-        return self.neighbours
+    def get_neighbours(self, fault=True):
+        if fault:
+            return self.neighbours
+        neighbours = dict()
+        for neighbour, transitions in self.neighbours.iteritems():
+            _transitions = list()
+            for transition in transitions:
+                if not transition.is_fault():
+                    _transitions.append(transition)
+            neighbours[neighbour] = _transitions
+        return neighbours
 
     def is_visited(self):
         return self.visited

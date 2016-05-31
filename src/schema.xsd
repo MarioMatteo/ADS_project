@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="automaton">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="states">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="state" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:simpleContent>
+                                        <xs:extension base="xs:string">
+                                            <xs:attribute name="initial" fixed="true" use="optional"/>
+                                        </xs:extension>
+                                    </xs:simpleContent>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="transitions">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="transition" maxOccurs="unbounded">
+                                <xs:complexType>
+                                    <xs:all>
+                                        <xs:element name="source" type="xs:string"/>
+                                        <xs:element name="event" type="xs:string" minOccurs="0"/>
+                                        <xs:element name="destination" type="xs:string"/>
+                                    </xs:all>
+                                    <xs:attribute name="observable" fixed="true" use="optional"/>
+                                    <xs:attribute name="fault" fixed="true" use="optional"/>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

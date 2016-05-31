@@ -1,16 +1,15 @@
 [DIAGNOSABILITY TASK]
 ;diagnosability level to check
 ;values: an integer
-level=10
+level=8
 
 ;method to use in order to check diagnosability level
 ;values: 1|2|3v1|3v2|all
-method=3v1
+method=all
 
 
 [INTERMEDIATE RESULTS]
 ;whether to save intermediate results such as automaton structural description (xml) and graphical representation
-;(according to format parameter)
 ;values: yes|no
 save=no
 
@@ -28,16 +27,16 @@ compact=yes
 ;n=3
 
 ;number of states
-ns=10
+ns=7
 
 ;max number of transitions
-nt=15
+nt=10
 
 ;cardinality of events alphabet
-ne=8
+ne=2
 
 ;number of observable transitions
 no=9
 
 ;number of fault transitions
-nf=2
+nf=1

@@ -2,13 +2,6 @@ from utils import *
 import string, random
 import networkx as nx
 
-"""
-    ns: number of states
-    nt: max number of transitions
-    ne: cardinality of events alphabet
-    no: number of observable transitions
-    nf: number of fault transitions
-"""
 def generate_random_automaton(ns, nt, ne, no, nf):
     states = dict()
     if ns <= len(string.ascii_uppercase):
@@ -49,33 +42,6 @@ def generate_random_automaton(ns, nt, ne, no, nf):
             transition = random.choice(unobservable_transitions)
             transition.set_event(Event(event_names.pop()))
         no -= 1
-    # prev_nf = nf
-    # prev_nt = nt
-    # save_img(automaton, 'temp', 'temp', 'png', True)
-    # prev_automaton = deepcopy(automaton)
-    # while True:
-    #     nf = prev_nf
-    #     nt = prev_nt
-    #     states = prev_automaton.get_states()
-    #     automaton.set_states(states)
-    #     while nf > 0:
-    #         if nt > 0:
-    #             src = states[random.choice(state_names)]
-    #             dst = states[random.choice(state_names)]
-    #             while not src.add_transition(dst, Transition(fault=True)):
-    #                 src = states[random.choice(state_names)]
-    #                 dst = states[random.choice(state_names)]
-    #                 print src.get_name()+'->'+dst.get_name()
-    #             nt -= 1
-    #             automaton.set_states(states)
-    #         else:
-    #             unobservable_transitions = automaton.get_unobservable_transitions()
-    #             if len(unobservable_transitions) > 0:
-    #                 transition = random.choice(unobservable_transitions)
-    #                 transition.set_fault()
-    #         nf -= 1
-    #     if not has_fault_loops(automaton):
-    #         break
     prev_nt = nt
     prev_nf = nf
     prev_automaton = automaton
