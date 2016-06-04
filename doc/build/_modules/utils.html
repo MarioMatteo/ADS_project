@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>utils &mdash; Diagnosability analysis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Diagnosability analysis 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Diagnosability analysis 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">file_handler</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+
+<div class="viewcode-block" id="generate_bad_twin"><a class="viewcode-back" href="../utils.html#utils.generate_bad_twin">[docs]</a><span class="k">def</span> <span class="nf">generate_bad_twin</span><span class="p">(</span><span class="n">automaton</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">states</span> <span class="o">=</span> <span class="n">initialize_states</span><span class="p">(</span><span class="n">automaton</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">automaton</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">dst</span><span class="p">,</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">dst_name</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transitions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">():</span>
+                    <span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span><span class="o">.</span><span class="n">add_transition</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">],</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">transition</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">level</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">():</span>
+                    <span class="n">fault</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="k">if</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">():</span>
+                        <span class="n">fault</span> <span class="o">=</span> <span class="bp">True</span>
+                    <span class="n">triplets</span> <span class="o">=</span> <span class="n">find</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">level</span> <span class="o">-</span> <span class="n">transition</span><span class="o">.</span><span class="n">get_event_level</span><span class="p">(),</span> <span class="n">fault</span><span class="p">,</span> <span class="n">transition</span><span class="o">.</span><span class="n">get_event</span><span class="p">())</span>
+                    <span class="k">for</span> <span class="n">event</span><span class="p">,</span> <span class="n">dst2</span><span class="p">,</span> <span class="n">fault2</span> <span class="ow">in</span> <span class="n">triplets</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">event</span><span class="o">.</span><span class="n">is_composed_by_all_identical_instances</span><span class="p">():</span>
+                            <span class="n">dst2_name</span> <span class="o">=</span> <span class="n">dst2</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+                            <span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span><span class="o">.</span><span class="n">add_transition</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="n">dst2_name</span><span class="p">],</span> <span class="n">Transition</span><span class="p">(</span><span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">fault</span><span class="o">=</span><span class="n">fault2</span><span class="p">))</span>
+    <span class="n">bad_twin</span> <span class="o">=</span> <span class="n">Automaton</span><span class="p">(</span><span class="n">automaton</span><span class="o">.</span><span class="n">get_initial_state</span><span class="p">(),</span> <span class="n">states</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">bad_twin</span><span class="o">.</span><span class="n">remove_unreachable_states</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">bad_twin</span></div>
+
+<div class="viewcode-block" id="generate_good_twin"><a class="viewcode-back" href="../utils.html#utils.generate_good_twin">[docs]</a><span class="k">def</span> <span class="nf">generate_good_twin</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">):</span>
+    <span class="n">states</span> <span class="o">=</span> <span class="n">initialize_states</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">bad_twin</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">dst</span><span class="p">,</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">dst_name</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transitions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">():</span>
+                    <span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span><span class="o">.</span><span class="n">add_transition</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">],</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">transition</span><span class="p">))</span>
+    <span class="n">good_twin</span> <span class="o">=</span> <span class="n">Automaton</span><span class="p">(</span><span class="n">bad_twin</span><span class="o">.</span><span class="n">get_initial_state</span><span class="p">(),</span> <span class="n">states</span><span class="p">)</span>
+    <span class="n">good_twin</span><span class="o">.</span><span class="n">remove_unreachable_states</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">good_twin</span></div>
+
+<div class="viewcode-block" id="first_synchronize"><a class="viewcode-back" href="../utils.html#utils.first_synchronize">[docs]</a><span class="k">def</span> <span class="nf">first_synchronize</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">,</span> <span class="n">good_twin</span><span class="p">):</span>
+    <span class="n">states</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">ambiguous_transitions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">src_name</span> <span class="ow">in</span> <span class="n">good_twin</span><span class="o">.</span><span class="n">get_states</span><span class="p">():</span>
+        <span class="n">couple_name</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">src_name</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">states</span><span class="p">[</span><span class="n">couple_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">couple_name</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">good_twin</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">couple_src_name</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">src_name</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dst</span><span class="p">,</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">dst_name</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span>
+            <span class="n">couple_dst_name</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">dst_name</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transitions</span><span class="p">:</span>
+                <span class="n">states</span><span class="p">[</span><span class="n">couple_src_name</span><span class="p">]</span><span class="o">.</span><span class="n">add_transition</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="n">couple_dst_name</span><span class="p">],</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">transition</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">bad_twin</span><span class="o">.</span><span class="n">is_non_deterministic</span><span class="p">():</span>
+        <span class="n">bt_states</span> <span class="o">=</span> <span class="n">bad_twin</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span>
+        <span class="n">gt_states</span> <span class="o">=</span> <span class="n">good_twin</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span>
+        <span class="n">prev_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">states</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">gt_src_name</span><span class="p">,</span> <span class="n">gt_src</span> <span class="ow">in</span> <span class="n">gt_states</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">src_name</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">gt_src_name</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">bt_src</span> <span class="o">=</span> <span class="n">bt_states</span><span class="p">[</span><span class="n">gt_src_name</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">bt_dst</span><span class="p">,</span> <span class="n">bt_transitions</span> <span class="ow">in</span> <span class="n">bt_src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">gt_dst</span><span class="p">,</span> <span class="n">gt_transitions</span> <span class="ow">in</span> <span class="n">gt_src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">bt_transition</span> <span class="ow">in</span> <span class="n">bt_transitions</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">gt_transition</span> <span class="ow">in</span> <span class="n">gt_transitions</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">bt_transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()</span> <span class="o">==</span> <span class="n">gt_transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">():</span>
+                                <span class="k">if</span> <span class="ow">not</span> <span class="n">bt_dst</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">gt_dst</span><span class="p">)</span> <span class="ow">or</span> <span class="n">bt_transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">():</span>
+                                    <span class="n">dst_name</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">bt_dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">gt_dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">()])</span>
+                                    <span class="k">if</span> <span class="n">dst_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
+                                        <span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">dst_name</span><span class="p">)</span>
+                                    <span class="n">ambiguous</span> <span class="o">=</span> <span class="n">bt_transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">()</span>
+                                    <span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span><span class="o">.</span><span class="n">add_transition</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">],</span> <span class="n">Transition</span><span class="p">(</span>
+                                        <span class="n">deepcopy</span><span class="p">(</span><span class="n">bt_transition</span><span class="o">.</span><span class="n">get_event</span><span class="p">()),</span> <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">))</span>
+                                    <span class="k">if</span> <span class="n">ambiguous</span><span class="p">:</span>
+                                        <span class="n">ambiguous_transitions</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">src_name</span><span class="p">,</span> <span class="n">dst_name</span><span class="p">))</span>
+        <span class="k">while</span> <span class="nb">set</span><span class="p">(</span><span class="n">states</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="n">prev_states</span><span class="p">:</span>
+            <span class="n">diff_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">states</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="n">prev_states</span>
+            <span class="n">prev_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">states</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="k">for</span> <span class="n">src_name</span> <span class="ow">in</span> <span class="n">diff_states</span><span class="p">:</span>
+                <span class="n">splitted_name</span> <span class="o">=</span> <span class="n">src_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                <span class="n">bt_src</span><span class="p">,</span> <span class="n">gt_src</span> <span class="o">=</span> <span class="n">bt_states</span><span class="p">[</span><span class="n">splitted_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">gt_states</span><span class="p">[</span><span class="n">splitted_name</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                <span class="k">for</span> <span class="n">bt_dst</span><span class="p">,</span> <span class="n">bt_transitions</span> <span class="ow">in</span> <span class="n">bt_src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">gt_dst</span><span class="p">,</span> <span class="n">gt_transitions</span> <span class="ow">in</span> <span class="n">gt_src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                        <span class="k">for</span> <span class="n">bt_transition</span> <span class="ow">in</span> <span class="n">bt_transitions</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">gt_transition</span> <span class="ow">in</span> <span class="n">gt_transitions</span><span class="p">:</span>
+                                <span class="k">if</span> <span class="n">bt_transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()</span> <span class="o">==</span> <span class="n">gt_transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">():</span>
+                                    <span class="n">dst_name</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">bt_dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">gt_dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">()])</span>
+                                    <span class="k">if</span> <span class="n">dst_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
+                                        <span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">dst_name</span><span class="p">)</span>
+                                    <span class="n">ambiguous</span> <span class="o">=</span> <span class="n">bt_transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">()</span>
+                                    <span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span><span class="o">.</span><span class="n">add_transition</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">],</span> <span class="n">Transition</span><span class="p">(</span>
+                                        <span class="n">deepcopy</span><span class="p">(</span><span class="n">bt_transition</span><span class="o">.</span><span class="n">get_event</span><span class="p">()),</span> <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">))</span>
+                                    <span class="k">if</span> <span class="n">ambiguous</span><span class="p">:</span>
+                                        <span class="n">ambiguous_transitions</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">src_name</span><span class="p">,</span> <span class="n">dst_name</span><span class="p">))</span>
+    <span class="n">initial_state</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">good_twin</span><span class="o">.</span><span class="n">get_initial_state</span><span class="p">()]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Automaton</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">states</span><span class="p">),</span> <span class="n">ambiguous_transitions</span></div>
+
+<div class="viewcode-block" id="second_synchronize"><a class="viewcode-back" href="../utils.html#utils.second_synchronize">[docs]</a><span class="k">def</span> <span class="nf">second_synchronize</span><span class="p">(</span><span class="n">old_synchronized</span><span class="p">,</span> <span class="n">ambiguous_transitions</span><span class="p">,</span> <span class="n">bad_twin</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+    <span class="n">states</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">old_synchronized</span><span class="o">.</span><span class="n">get_states</span><span class="p">())</span>
+    <span class="n">bt_states</span> <span class="o">=</span> <span class="n">bad_twin</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span>
+    <span class="n">prev_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">states</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">src_name</span> <span class="ow">in</span> <span class="n">old_synchronized</span><span class="o">.</span><span class="n">get_states</span><span class="p">():</span>
+        <span class="n">splitted_name</span> <span class="o">=</span> <span class="n">src_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+        <span class="n">bt_src</span><span class="p">,</span> <span class="n">gt_src</span> <span class="o">=</span> <span class="n">bt_states</span><span class="p">[</span><span class="n">splitted_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">bt_states</span><span class="p">[</span><span class="n">splitted_name</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="n">bt_current_level_transitions</span> <span class="o">=</span> <span class="n">bt_src</span><span class="o">.</span><span class="n">get_current_level_transitions</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+        <span class="n">gt_current_level_transitions</span> <span class="o">=</span> <span class="n">gt_src</span><span class="o">.</span><span class="n">get_current_level_transitions</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">fault</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">bt_dst</span><span class="p">,</span> <span class="n">bt_transitions</span> <span class="ow">in</span> <span class="n">bt_current_level_transitions</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">gt_dst</span><span class="p">,</span> <span class="n">gt_transitions</span> <span class="ow">in</span> <span class="n">gt_current_level_transitions</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">bt_transition</span> <span class="ow">in</span> <span class="n">bt_transitions</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">gt_transition</span> <span class="ow">in</span> <span class="n">gt_transitions</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">bt_transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()</span> <span class="o">==</span> <span class="n">gt_transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">():</span>
+                            <span class="n">dst_name</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">bt_dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">gt_dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">()])</span>
+                            <span class="k">if</span> <span class="n">dst_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
+                                <span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">dst_name</span><span class="p">)</span>
+                            <span class="n">ambiguous</span> <span class="o">=</span> <span class="n">bt_transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">()</span>
+                            <span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span><span class="o">.</span><span class="n">add_transition</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">],</span> <span class="n">Transition</span><span class="p">(</span>
+                                <span class="n">deepcopy</span><span class="p">(</span><span class="n">bt_transition</span><span class="o">.</span><span class="n">get_event</span><span class="p">()),</span> <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">))</span>
+                            <span class="k">if</span> <span class="n">ambiguous</span><span class="p">:</span>
+                                <span class="n">ambiguous_transitions</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">src_name</span><span class="p">,</span> <span class="n">dst_name</span><span class="p">))</span>
+    <span class="k">while</span> <span class="nb">set</span><span class="p">(</span><span class="n">states</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">!=</span> <span class="n">prev_states</span><span class="p">:</span>
+        <span class="n">diff_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">states</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">-</span> <span class="n">prev_states</span>
+        <span class="n">prev_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">states</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">src_name</span> <span class="ow">in</span> <span class="n">diff_states</span><span class="p">:</span>
+            <span class="n">splitted_name</span> <span class="o">=</span> <span class="n">src_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+            <span class="n">bt_src</span><span class="p">,</span> <span class="n">gt_src</span> <span class="o">=</span> <span class="n">bt_states</span><span class="p">[</span><span class="n">splitted_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">bt_states</span><span class="p">[</span><span class="n">splitted_name</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="k">for</span> <span class="n">bt_dst</span><span class="p">,</span> <span class="n">bt_transitions</span> <span class="ow">in</span> <span class="n">bt_src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">gt_dst</span><span class="p">,</span> <span class="n">gt_transitions</span> <span class="ow">in</span> <span class="n">gt_src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">(</span><span class="n">fault</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">bt_transition</span> <span class="ow">in</span> <span class="n">bt_transitions</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">gt_transition</span> <span class="ow">in</span> <span class="n">gt_transitions</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">bt_transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()</span> <span class="o">==</span> <span class="n">gt_transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">():</span>
+                                <span class="n">dst_name</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">bt_dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">gt_dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">()])</span>
+                                <span class="k">if</span> <span class="n">dst_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
+                                    <span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">dst_name</span><span class="p">)</span>
+                                <span class="n">ambiguous</span> <span class="o">=</span> <span class="n">bt_transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">()</span>
+                                <span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span><span class="o">.</span><span class="n">add_transition</span><span class="p">(</span><span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">],</span> <span class="n">Transition</span><span class="p">(</span>
+                                    <span class="n">deepcopy</span><span class="p">(</span><span class="n">bt_transition</span><span class="o">.</span><span class="n">get_event</span><span class="p">()),</span> <span class="n">ambiguous</span><span class="o">=</span><span class="n">ambiguous</span><span class="p">))</span>
+                                <span class="k">if</span> <span class="n">ambiguous</span><span class="p">:</span>
+                                    <span class="n">ambiguous_transitions</span><span class="o">.</span><span class="n">add</span><span class="p">((</span><span class="n">src_name</span><span class="p">,</span> <span class="n">dst_name</span><span class="p">))</span>
+    <span class="n">initial_state</span> <span class="o">=</span> <span class="n">old_synchronized</span><span class="o">.</span><span class="n">get_initial_state</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">Automaton</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">states</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="find"><a class="viewcode-back" href="../utils.html#utils.find">[docs]</a><span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">fault</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+    <span class="n">triplets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">dst2</span><span class="p">,</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">dst</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transitions</span><span class="p">:</span>
+            <span class="n">fault2</span> <span class="o">=</span> <span class="n">fault</span>
+            <span class="k">if</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">():</span>
+                <span class="n">fault2</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="n">event_level</span> <span class="o">=</span> <span class="n">transition</span><span class="o">.</span><span class="n">get_event_level</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">()</span> <span class="ow">and</span> <span class="n">event_level</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
+                <span class="n">composed_event</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">transition</span><span class="o">.</span><span class="n">get_event</span><span class="p">())</span>
+                <span class="n">composed_event</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">event_level</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
+                    <span class="n">triplets</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">composed_event</span><span class="p">,</span> <span class="n">dst2</span><span class="p">,</span> <span class="n">fault2</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">triplets</span> <span class="o">+=</span> <span class="n">find</span><span class="p">(</span><span class="n">dst2</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="n">event_level</span><span class="p">,</span> <span class="n">fault2</span><span class="p">,</span> <span class="n">composed_event</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">():</span>
+                <span class="n">triplets</span> <span class="o">+=</span> <span class="n">find</span><span class="p">(</span><span class="n">dst2</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">fault2</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">triplets</span></div>
+
+<div class="viewcode-block" id="condition_C1"><a class="viewcode-back" href="../utils.html#utils.condition_C1">[docs]</a><span class="k">def</span> <span class="nf">condition_C1</span><span class="p">(</span><span class="n">ambiguous_transitions</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">ambiguous_transitions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="condition_C2"><a class="viewcode-back" href="../utils.html#utils.condition_C2">[docs]</a><span class="k">def</span> <span class="nf">condition_C2</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">):</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="n">bad_twin</span><span class="o">.</span><span class="n">is_non_deterministic</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="condition_C3"><a class="viewcode-back" href="../utils.html#utils.condition_C3">[docs]</a><span class="k">def</span> <span class="nf">condition_C3</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">):</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="n">bad_twin</span><span class="o">.</span><span class="n">has_ambiguous_events</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="initialize_states"><a class="viewcode-back" href="../utils.html#utils.initialize_states">[docs]</a><span class="k">def</span> <span class="nf">initialize_states</span><span class="p">(</span><span class="n">automaton</span><span class="p">):</span>
+    <span class="n">states</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">automaton</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">states</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">states</span></div>
+
+<div class="viewcode-block" id="find_loops"><a class="viewcode-back" href="../utils.html#utils.find_loops">[docs]</a><span class="k">def</span> <span class="nf">find_loops</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">visited</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+        <span class="c1"># new_visited = deepcopy(visited)</span>
+        <span class="c1"># new_visited.add(src.get_name())</span>
+        <span class="k">if</span> <span class="n">find_loops</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">visited</span><span class="p">):</span>
+        <span class="c1"># if find_loops(dst, new_visited):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="bp">False</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Diagnosability analysis 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Matteo Mario, Michele Masciale.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,828 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>automaton module &mdash; Diagnosability analysis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Diagnosability analysis 1.0 documentation" href="index.html" />
+    <link rel="next" title="config module" href="config.html" />
+    <link rel="prev" title="Welcome to Diagnosability analysis’s documentation!" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="config.html" title="config module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to Diagnosability analysis’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Diagnosability analysis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-automaton">
+<span id="automaton-module"></span><h1>automaton module<a class="headerlink" href="#module-automaton" title="Permalink to this headline">¶</a></h1>
+<p>Contains the classes to represent a non-deterministic finite automaton.</p>
+<dl class="class">
+<dt id="automaton.Automaton">
+<em class="property">class </em><code class="descclassname">automaton.</code><code class="descname">Automaton</code><span class="sig-paren">(</span><em>initial_state</em>, <em>states</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a non-deterministic finite automaton.</p>
+<dl class="docutils">
+<dt>An automaton has the following attributes:</dt>
+<dd><ul class="first last simple">
+<li>initial_state: the name of the initial state</li>
+<li>states: a dict representing its states that maps a name into the corresponding state</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="automaton.Automaton.find_reachable_states">
+<code class="descname">find_reachable_states</code><span class="sig-paren">(</span><em>initial_state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.find_reachable_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.find_reachable_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Performs a depth-first search, starting from its initial state.</p>
+<p>The states that are involved in this search are marked as visited.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>initial_state</strong> (<em>str</em>) &#8211; the name of its initial state</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.get_initial_state">
+<code class="descname">get_initial_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.get_initial_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.get_initial_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the initial state&#8217;s name of this automaton.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the name of its initial state</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.get_loops">
+<code class="descname">get_loops</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.get_loops"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.get_loops" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets all the simple cycles of this automaton.</p>
+<p>The cycles are returned as a list of tuples, sorted by their length. Each tuple represents a cycle and
+it is composed by the sequence of the names of the states taking part to that cycle.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">all the simple cycles of this automaton</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list(tuple(str))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.get_states">
+<code class="descname">get_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.get_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.get_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the name-state map of this automaton.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">its name-state map</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">dict(str: State)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.get_transitions">
+<code class="descname">get_transitions</code><span class="sig-paren">(</span><em>unobservable=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.get_transitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.get_transitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the transitions of this automaton.</p>
+<p>The transitions are returned as a list of tuples in which the first element is the source name and the second
+one is the destination name.
+If unobservable is True it returns only the unobservable transitions of this automaton, otherwise it returns
+all its transitions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>unobservable</strong> (<em>bool</em>) &#8211; a flag indicating whether to include only unobservable transitions</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the transitions of this automaton according to unobservable flag</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list(tuple(str, str))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.get_unobservable_transitions">
+<code class="descname">get_unobservable_transitions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.get_unobservable_transitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.get_unobservable_transitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the unobservable transitions of this automaton.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the unobservable transitions of this automaton</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list(Transition)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.has_ambiguous_events">
+<code class="descname">has_ambiguous_events</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.has_ambiguous_events"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.has_ambiguous_events" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this automaton has at least an ambiguous event.</p>
+<p>In our definition, an event is ambiguous if it is associated both to a fault transition and to an observable
+one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether this automaton has at least an ambiguous event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.has_fault_loops">
+<code class="descname">has_fault_loops</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.has_fault_loops"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.has_fault_loops" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this automaton has at least a cycle composed only of fault transitions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether this automaton has at least a cycle composed only of fault transitions or not</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.is_language_alive">
+<code class="descname">is_language_alive</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.is_language_alive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.is_language_alive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the language generated by this automaton on its events alphabet is alive.</p>
+<dl class="docutils">
+<dt>The language is alive if:</dt>
+<dd><ul class="first last simple">
+<li>every state has at least one outgoing transition</li>
+<li>every cyclic path starting from the initial state contains at least an observable transition</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the language generated by this automaton on its events alphabet is alive or not</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.is_non_deterministic">
+<code class="descname">is_non_deterministic</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.is_non_deterministic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.is_non_deterministic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this automaton is non-deterministic.</p>
+<p>An automaton is non-deterministic if there is at least a couple of outgoing transitions from the same state and
+sharing the same event.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether this automaton is non-deterministic or not</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.remove_unreachable_states">
+<code class="descname">remove_unreachable_states</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.remove_unreachable_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.remove_unreachable_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the states that are unreachable from the initial state.</p>
+<p>To perform this task, a depth-first search is used.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.set_states">
+<code class="descname">set_states</code><span class="sig-paren">(</span><em>states</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.set_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.set_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the name-state map.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>states</strong> (<em>dict(str: State)</em>) &#8211; the name-state map to be set</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Automaton.set_transition_event">
+<code class="descname">set_transition_event</code><span class="sig-paren">(</span><em>src_name</em>, <em>dst_name</em>, <em>event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Automaton.set_transition_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Automaton.set_transition_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets an event to a transition.</p>
+<p>This function is invoked during the first phase of the random generation of an automaton. In this phase
+there is only one outgoing transition from one state to a neighbour, so a transition can be identified by its
+source state&#8217;s name and its destination state&#8217;s name.
+An event is not added when the transition has an event already associated.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>src_name</strong> (<em>str</em>) &#8211; the source state&#8217;s name of the transition</li>
+<li><strong>dst_name</strong> (<em>str</em>) &#8211; the destination state&#8217;s name of the transition</li>
+<li><strong>event</strong> (<a class="reference internal" href="#automaton.Event" title="automaton.Event"><em>Event</em></a>) &#8211; the event to be set</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">whether the event has been set or not</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="automaton.Event">
+<em class="property">class </em><code class="descclassname">automaton.</code><code class="descname">Event</code><span class="sig-paren">(</span><em>name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a (composed) event associated to a transition.</p>
+<dl class="docutils">
+<dt>An event has the following attributes:</dt>
+<dd><ul class="first last simple">
+<li>multiset: a Counter representing the multiset of its components</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="automaton.Event.add">
+<code class="descname">add</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Event.add"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Event.add" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the components of an event to this event.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference internal" href="#automaton.Event" title="automaton.Event"><em>Event</em></a>) &#8211; the event to be added</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Event.get_level">
+<code class="descname">get_level</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Event.get_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Event.get_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the level of this event.</p>
+<p>The level of a composed event is its components multiset&#8217;s cardinality.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the level of this event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Event.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Event.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Event.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the name of this event.</p>
+<p>If its level is greater than 1, the name is obtained concatenating the names of its components using &#8216;//&#8217; as
+separator.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the name of this event</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Event.is_composed_by_all_identical_instances">
+<code class="descname">is_composed_by_all_identical_instances</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Event.is_composed_by_all_identical_instances"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Event.is_composed_by_all_identical_instances" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this event is composed by all identical instances of events.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether this event is composed by all identical instances of events or not</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="automaton.State">
+<em class="property">class </em><code class="descclassname">automaton.</code><code class="descname">State</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a state of the automaton.</p>
+<dl class="docutils">
+<dt>A state has the following attributes:</dt>
+<dd><ul class="first last simple">
+<li>name: a string representing its name</li>
+<li>neighbours: a dict representing its neighbours that maps a state into a list of transitions</li>
+<li>visited: a boolean flag used during depth-first search</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="automaton.State.add_transition">
+<code class="descname">add_transition</code><span class="sig-paren">(</span><em>neighbour</em>, <em>transition</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.add_transition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.add_transition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds an outgoing transition from this state towards a neighbour.</p>
+<dl class="docutils">
+<dt>A transition is not added when:</dt>
+<dd><ul class="first last simple">
+<li>it&#8217;s a self loop unobservable transition</li>
+<li>it creates a loop of unobservable transitions between this state and its neighbour</li>
+<li>it&#8217;s already present (see beelow)</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>neighbour</strong> (<a class="reference internal" href="#automaton.State" title="automaton.State"><em>State</em></a>) &#8211; the neighbour state</li>
+<li><strong>transition</strong> (<a class="reference internal" href="#automaton.Transition" title="automaton.Transition"><em>Transition</em></a>) &#8211; the transition to be added</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">whether the transition has been added or not</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.equals">
+<code class="descname">equals</code><span class="sig-paren">(</span><em>state</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.equals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.equals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this state is equal to another.</p>
+<p>Two states are equal if they have the same name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>state</strong> (<a class="reference internal" href="#automaton.State" title="automaton.State"><em>State</em></a>) &#8211; the state with which the comparison is performed</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">whether this state is equal to another or not</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.get_current_level_transitions">
+<code class="descname">get_current_level_transitions</code><span class="sig-paren">(</span><em>level</em>, <em>fault=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.get_current_level_transitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.get_current_level_transitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the transitions whose (composed) event is of a certain level.</p>
+<p>If fault is False it returns only the non fault outgoing transitions from this state towards its neighbours,
+otherwise it returns all the outgoing transitions from this state towards its neighbour (according to level).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>level</strong> (<em>int</em>) &#8211; the level through which filter which transitions to get</li>
+<li><strong>fault</strong> (<em>bool</em>) &#8211; a flag indicating whether to include fault transitions or not</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the neighbour-transitions map according to level and fault flag</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict(State: list(Transition))</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the name of this state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the name of this state</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.get_neighbour">
+<code class="descname">get_neighbour</code><span class="sig-paren">(</span><em>name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.get_neighbour"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.get_neighbour" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the neighbour of this state, according to its name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>str</em>) &#8211; the neighbour&#8217;s name</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the neighbour state if exists, otherwise None</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">State or None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.get_neighbours">
+<code class="descname">get_neighbours</code><span class="sig-paren">(</span><em>fault=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.get_neighbours"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.get_neighbours" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the neighbour-transitions map of this state.</p>
+<p>If fault is False it returns only the non fault outgoing transitions from this state towards its neighbours,
+otherwise it returns all the outgoing transitions from this state to its neighbours.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fault</strong> (<em>bool</em>) &#8211; a flag indicating whether to include fault transitions or not</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the neighbour-transitions map of this state according to fault flag</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict(State: list(Transition))</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.has_observable_transitions">
+<code class="descname">has_observable_transitions</code><span class="sig-paren">(</span><em>neighbour</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.has_observable_transitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.has_observable_transitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this state has at least an observable transition towards a neighbour.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>neighbour</strong> (<a class="reference internal" href="#automaton.State" title="automaton.State"><em>State</em></a>) &#8211; the neighbour state</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">whether this state has at least an observable transition towards a neighbour</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.has_unobservable_transitions">
+<code class="descname">has_unobservable_transitions</code><span class="sig-paren">(</span><em>neighbour</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.has_unobservable_transitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.has_unobservable_transitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this state has at least an unobservable transition towards a neighbour.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>neighbour</strong> (<a class="reference internal" href="#automaton.State" title="automaton.State"><em>State</em></a>) &#8211; the neighbour state</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">whether this state has at least an unobservable transition towards a neighbour</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.is_visited">
+<code class="descname">is_visited</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.is_visited"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.is_visited" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this state has been already visited.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether this state has been visited or not</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.set_transitions">
+<code class="descname">set_transitions</code><span class="sig-paren">(</span><em>neighbour</em>, <em>transitions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.set_transitions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.set_transitions" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets a list of outgoing transitions from this state towards a neighbour.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>neighbour</strong> (<a class="reference internal" href="#automaton.State" title="automaton.State"><em>State</em></a>) &#8211; the neighbour state</li>
+<li><strong>transitions</strong> (<em>list(Transition)</em>) &#8211; the list of transitions to be set</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.set_visited">
+<code class="descname">set_visited</code><span class="sig-paren">(</span><em>visited=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.set_visited"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.set_visited" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the boolean flag of this state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>visited</strong> (<em>bool</em>) &#8211; the new flag</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.State.transition_already_present">
+<code class="descname">transition_already_present</code><span class="sig-paren">(</span><em>neighbour</em>, <em>_transition</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#State.transition_already_present"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.State.transition_already_present" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if an outgoing transition from this state towards a neighbour is already present.</p>
+<p>Between two states cannot exist a couple of transitions sharing the same event, unless one is fault and the
+other not.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>neighbour</strong> (<a class="reference internal" href="#automaton.State" title="automaton.State"><em>State</em></a>) &#8211; the neighbour state</li>
+<li><strong>_transition</strong> (<a class="reference internal" href="#automaton.Transition" title="automaton.Transition"><em>Transition</em></a>) &#8211; the transition to check</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">whether the transition is already present or not</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="automaton.Transition">
+<em class="property">class </em><code class="descclassname">automaton.</code><code class="descname">Transition</code><span class="sig-paren">(</span><em>event=None</em>, <em>fault=False</em>, <em>ambiguous=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Transition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Transition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a transition of the automaton.</p>
+<dl class="docutils">
+<dt>A transition has the following attributes:</dt>
+<dd><ul class="first last simple">
+<li>event: the event associated to the transition</li>
+<li>fault: a boolean flag marking it as fault</li>
+<li>ambiguous: a boolean flag marking it as ambiguous</li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="automaton.Transition.get_event">
+<code class="descname">get_event</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Transition.get_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Transition.get_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the event associated to this transition.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the event associated to the transition</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="#automaton.Event" title="automaton.Event">Event</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Transition.get_event_level">
+<code class="descname">get_event_level</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Transition.get_event_level"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Transition.get_event_level" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the level of the event associated to this transition.</p>
+<p>If no event is associated to this transition it returns 0.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the level of the event associated to this transition</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Transition.get_event_name">
+<code class="descname">get_event_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Transition.get_event_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Transition.get_event_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the name of the event associated to this transition.</p>
+<p>If no event is associated to this transition it returns None.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the name of the event associated to this transition if exists, otherwise None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str or None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Transition.is_ambiguous">
+<code class="descname">is_ambiguous</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Transition.is_ambiguous"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Transition.is_ambiguous" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this transition is ambiguous.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether this transition is ambiguous or not</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Transition.is_fault">
+<code class="descname">is_fault</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Transition.is_fault"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Transition.is_fault" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this transition is fault.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether this transition is fault or not</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Transition.is_observable">
+<code class="descname">is_observable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Transition.is_observable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Transition.is_observable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if this transition is observable.</p>
+<p>A transition is observable if there is a not null event associated to it</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">whether the transition is observable or not</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Transition.set_event">
+<code class="descname">set_event</code><span class="sig-paren">(</span><em>event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Transition.set_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Transition.set_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Associates an event to this transition.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>event</strong> (<a class="reference internal" href="#automaton.Event" title="automaton.Event"><em>Event</em></a>) &#8211; the event to be associated to this transition</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="automaton.Transition.set_fault">
+<code class="descname">set_fault</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/automaton.html#Transition.set_fault"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#automaton.Transition.set_fault" title="Permalink to this definition">¶</a></dt>
+<dd><p>Marks this transition as fault.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to Diagnosability analysis&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="config.html"
+                        title="next chapter">config module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/automaton.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="config.html" title="config module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to Diagnosability analysis’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">Diagnosability analysis 1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Matteo Mario, Michele Masciale.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.2.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,803 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>automaton &mdash; Diagnosability analysis 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Diagnosability analysis 1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Diagnosability analysis 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for automaton</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Contains the classes to represent a non-deterministic finite automaton.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+
+<div class="viewcode-block" id="State"><a class="viewcode-back" href="../automaton.html#automaton.State">[docs]</a><span class="k">class</span> <span class="nc">State</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a state of the automaton.</span>
+
+<span class="sd">    A state has the following attributes:</span>
+<span class="sd">        - name: a string representing its name</span>
+<span class="sd">        - neighbours: a dict representing its neighbours that maps a state into a list of transitions</span>
+<span class="sd">        - visited: a boolean flag used during depth-first search</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the state.</span>
+
+<span class="sd">        :param name: the name of the state</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">visited</span> <span class="o">=</span> <span class="bp">False</span>
+
+<div class="viewcode-block" id="State.get_name"><a class="viewcode-back" href="../automaton.html#automaton.State.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the name of this state.</span>
+
+<span class="sd">        :return: the name of this state</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span></div>
+
+<div class="viewcode-block" id="State.get_neighbours"><a class="viewcode-back" href="../automaton.html#automaton.State.get_neighbours">[docs]</a>    <span class="k">def</span> <span class="nf">get_neighbours</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fault</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the neighbour-transitions map of this state.</span>
+
+<span class="sd">        If fault is False it returns only the non fault outgoing transitions from this state towards its neighbours,</span>
+<span class="sd">        otherwise it returns all the outgoing transitions from this state to its neighbours.</span>
+
+<span class="sd">        :param fault: a flag indicating whether to include fault transitions or not</span>
+<span class="sd">        :type fault: bool</span>
+<span class="sd">        :return: the neighbour-transitions map of this state according to fault flag</span>
+<span class="sd">        :rtype: dict(State: list(Transition))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">fault</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span>
+        <span class="n">neighbours</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">neighbour</span><span class="p">,</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">_transitions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transitions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">():</span>
+                    <span class="n">_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transition</span><span class="p">)</span>
+            <span class="n">neighbours</span><span class="p">[</span><span class="n">neighbour</span><span class="p">]</span> <span class="o">=</span> <span class="n">_transitions</span>
+        <span class="k">return</span> <span class="n">neighbours</span></div>
+
+<div class="viewcode-block" id="State.is_visited"><a class="viewcode-back" href="../automaton.html#automaton.State.is_visited">[docs]</a>    <span class="k">def</span> <span class="nf">is_visited</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this state has been already visited.</span>
+
+<span class="sd">        :return: whether this state has been visited or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">visited</span></div>
+
+<div class="viewcode-block" id="State.set_visited"><a class="viewcode-back" href="../automaton.html#automaton.State.set_visited">[docs]</a>    <span class="k">def</span> <span class="nf">set_visited</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visited</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the boolean flag of this state.</span>
+
+<span class="sd">        :param visited: the new flag</span>
+<span class="sd">        :type visited: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">visited</span> <span class="o">=</span> <span class="n">visited</span></div>
+
+<div class="viewcode-block" id="State.get_neighbour"><a class="viewcode-back" href="../automaton.html#automaton.State.get_neighbour">[docs]</a>    <span class="k">def</span> <span class="nf">get_neighbour</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the neighbour of this state, according to its name.</span>
+
+<span class="sd">        :param name: the neighbour&#39;s name</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        :return: the neighbour state if exists, otherwise None</span>
+<span class="sd">        :rtype: State or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">neighbour</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">neighbour</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">neighbour</span>
+        <span class="k">return</span> <span class="bp">None</span></div>
+
+<div class="viewcode-block" id="State.set_transitions"><a class="viewcode-back" href="../automaton.html#automaton.State.set_transitions">[docs]</a>    <span class="k">def</span> <span class="nf">set_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbour</span><span class="p">,</span> <span class="n">transitions</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets a list of outgoing transitions from this state towards a neighbour.</span>
+
+<span class="sd">        :param neighbour: the neighbour state</span>
+<span class="sd">        :type neighbour: State</span>
+<span class="sd">        :param transitions: the list of transitions to be set</span>
+<span class="sd">        :type transitions: list(Transition)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="p">[</span><span class="n">neighbour</span><span class="p">]</span> <span class="o">=</span> <span class="n">transitions</span></div>
+
+<div class="viewcode-block" id="State.add_transition"><a class="viewcode-back" href="../automaton.html#automaton.State.add_transition">[docs]</a>    <span class="k">def</span> <span class="nf">add_transition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbour</span><span class="p">,</span> <span class="n">transition</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds an outgoing transition from this state towards a neighbour.</span>
+
+<span class="sd">        A transition is not added when:</span>
+<span class="sd">            - it&#39;s a self loop unobservable transition</span>
+<span class="sd">            - it creates a loop of unobservable transitions between this state and its neighbour</span>
+<span class="sd">            - it&#39;s already present (see beelow)</span>
+
+<span class="sd">        :param neighbour: the neighbour state</span>
+<span class="sd">        :type neighbour: State</span>
+<span class="sd">        :param transition: the transition to be added</span>
+<span class="sd">        :type transition: Transition</span>
+<span class="sd">        :return: whether the transition has been added or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">neighbour</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">has_unobservable_transitions</span><span class="p">(</span><span class="n">neighbour</span><span class="p">)</span> <span class="ow">or</span> <span class="n">neighbour</span><span class="o">.</span><span class="n">has_unobservable_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span> <span class="ow">and</span> \
+                <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="n">neighbour</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="p">[</span><span class="n">neighbour</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">transition</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">transition_already_present</span><span class="p">(</span><span class="n">neighbour</span><span class="p">,</span> <span class="n">transition</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="p">[</span><span class="n">neighbour</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transition</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span></div>
+
+<div class="viewcode-block" id="State.transition_already_present"><a class="viewcode-back" href="../automaton.html#automaton.State.transition_already_present">[docs]</a>    <span class="k">def</span> <span class="nf">transition_already_present</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbour</span><span class="p">,</span> <span class="n">_transition</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if an outgoing transition from this state towards a neighbour is already present.</span>
+
+<span class="sd">        Between two states cannot exist a couple of transitions sharing the same event, unless one is fault and the</span>
+<span class="sd">        other not.</span>
+
+<span class="sd">        :param neighbour: the neighbour state</span>
+<span class="sd">        :type neighbour: State</span>
+<span class="sd">        :param _transition: the transition to check</span>
+<span class="sd">        :type _transition: Transition</span>
+<span class="sd">        :return: whether the transition is already present or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="p">[</span><span class="n">neighbour</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()</span> <span class="o">==</span> <span class="n">_transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()</span> <span class="ow">and</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">()</span> <span class="o">==</span> <span class="n">_transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">():</span>
+                <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+
+<div class="viewcode-block" id="State.has_observable_transitions"><a class="viewcode-back" href="../automaton.html#automaton.State.has_observable_transitions">[docs]</a>    <span class="k">def</span> <span class="nf">has_observable_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbour</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this state has at least an observable transition towards a neighbour.</span>
+
+<span class="sd">        :param neighbour: the neighbour state</span>
+<span class="sd">        :type neighbour: State</span>
+<span class="sd">        :return: whether this state has at least an observable transition towards a neighbour</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">neighbour</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="p">[</span><span class="n">neighbour</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">():</span>
+                <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+
+<div class="viewcode-block" id="State.has_unobservable_transitions"><a class="viewcode-back" href="../automaton.html#automaton.State.has_unobservable_transitions">[docs]</a>    <span class="k">def</span> <span class="nf">has_unobservable_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbour</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this state has at least an unobservable transition towards a neighbour.</span>
+
+<span class="sd">        :param neighbour: the neighbour state</span>
+<span class="sd">        :type neighbour: State</span>
+<span class="sd">        :return: whether this state has at least an unobservable transition towards a neighbour</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">neighbour</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="p">[</span><span class="n">neighbour</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">():</span>
+                <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+
+<div class="viewcode-block" id="State.get_current_level_transitions"><a class="viewcode-back" href="../automaton.html#automaton.State.get_current_level_transitions">[docs]</a>    <span class="k">def</span> <span class="nf">get_current_level_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">fault</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the transitions whose (composed) event is of a certain level.</span>
+
+<span class="sd">        If fault is False it returns only the non fault outgoing transitions from this state towards its neighbours,</span>
+<span class="sd">        otherwise it returns all the outgoing transitions from this state towards its neighbour (according to level).</span>
+
+<span class="sd">        :param level: the level through which filter which transitions to get</span>
+<span class="sd">        :type level: int</span>
+<span class="sd">        :param fault: a flag indicating whether to include fault transitions or not</span>
+<span class="sd">        :type fault: bool</span>
+<span class="sd">        :return: the neighbour-transitions map according to level and fault flag</span>
+<span class="sd">        :rtype: dict(State: list(Transition))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">current_level_transitions</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">neighbour</span><span class="p">,</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">neighbours</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="n">_transitions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transitions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">transition</span><span class="o">.</span><span class="n">get_event_level</span><span class="p">()</span> <span class="o">==</span> <span class="n">level</span> <span class="ow">and</span> <span class="p">(</span><span class="n">fault</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">()):</span>
+                    <span class="n">_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transition</span><span class="p">)</span>
+            <span class="n">current_level_transitions</span><span class="p">[</span><span class="n">neighbour</span><span class="p">]</span> <span class="o">=</span> <span class="n">_transitions</span>
+        <span class="k">return</span> <span class="n">current_level_transitions</span></div>
+
+<div class="viewcode-block" id="State.equals"><a class="viewcode-back" href="../automaton.html#automaton.State.equals">[docs]</a>    <span class="k">def</span> <span class="nf">equals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this state is equal to another.</span>
+
+<span class="sd">        Two states are equal if they have the same name.</span>
+
+<span class="sd">        :param state: the state with which the comparison is performed</span>
+<span class="sd">        :type state: State</span>
+<span class="sd">        :return: whether this state is equal to another or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">state</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span></div></div>
+
+<div class="viewcode-block" id="Transition"><a class="viewcode-back" href="../automaton.html#automaton.Transition">[docs]</a><span class="k">class</span> <span class="nc">Transition</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a transition of the automaton.</span>
+
+<span class="sd">    A transition has the following attributes:</span>
+<span class="sd">        - event: the event associated to the transition</span>
+<span class="sd">        - fault: a boolean flag marking it as fault</span>
+<span class="sd">        - ambiguous: a boolean flag marking it as ambiguous</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">fault</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">ambiguous</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the transition.</span>
+
+<span class="sd">        :param event: the event to be associated to the transition</span>
+<span class="sd">        :type event: Event</span>
+<span class="sd">        :param fault: a flag indicating whether the transition is fault or not</span>
+<span class="sd">        :type fault: bool</span>
+<span class="sd">        :param ambiguous: a flag indicating whether the transition is ambiguous or not</span>
+<span class="sd">        :type ambiguous: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fault</span> <span class="o">=</span> <span class="n">fault</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ambiguous</span> <span class="o">=</span> <span class="n">ambiguous</span>
+
+<div class="viewcode-block" id="Transition.get_event"><a class="viewcode-back" href="../automaton.html#automaton.Transition.get_event">[docs]</a>    <span class="k">def</span> <span class="nf">get_event</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the event associated to this transition.</span>
+
+<span class="sd">        :return: the event associated to the transition</span>
+<span class="sd">        :rtype: Event</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span></div>
+
+<div class="viewcode-block" id="Transition.is_fault"><a class="viewcode-back" href="../automaton.html#automaton.Transition.is_fault">[docs]</a>    <span class="k">def</span> <span class="nf">is_fault</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this transition is fault.</span>
+
+<span class="sd">        :return: whether this transition is fault or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fault</span></div>
+
+<div class="viewcode-block" id="Transition.is_ambiguous"><a class="viewcode-back" href="../automaton.html#automaton.Transition.is_ambiguous">[docs]</a>    <span class="k">def</span> <span class="nf">is_ambiguous</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this transition is ambiguous.</span>
+
+<span class="sd">        :return: whether this transition is ambiguous or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ambiguous</span></div>
+
+<div class="viewcode-block" id="Transition.is_observable"><a class="viewcode-back" href="../automaton.html#automaton.Transition.is_observable">[docs]</a>    <span class="k">def</span> <span class="nf">is_observable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this transition is observable.</span>
+
+<span class="sd">        A transition is observable if there is a not null event associated to it</span>
+
+<span class="sd">        :return: whether the transition is observable or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span></div>
+
+<div class="viewcode-block" id="Transition.set_event"><a class="viewcode-back" href="../automaton.html#automaton.Transition.set_event">[docs]</a>    <span class="k">def</span> <span class="nf">set_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Associates an event to this transition.</span>
+
+<span class="sd">        :param event: the event to be associated to this transition</span>
+<span class="sd">        :type event: Event</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">event</span></div>
+
+<div class="viewcode-block" id="Transition.set_fault"><a class="viewcode-back" href="../automaton.html#automaton.Transition.set_fault">[docs]</a>    <span class="k">def</span> <span class="nf">set_fault</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Marks this transition as fault.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fault</span> <span class="o">=</span> <span class="bp">True</span></div>
+
+<div class="viewcode-block" id="Transition.get_event_name"><a class="viewcode-back" href="../automaton.html#automaton.Transition.get_event_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_event_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the name of the event associated to this transition.</span>
+
+<span class="sd">        If no event is associated to this transition it returns None.</span>
+
+<span class="sd">        :return: the name of the event associated to this transition if exists, otherwise None</span>
+<span class="sd">        :rtype: str or None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Transition.get_event_level"><a class="viewcode-back" href="../automaton.html#automaton.Transition.get_event_level">[docs]</a>    <span class="k">def</span> <span class="nf">get_event_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the level of the event associated to this transition.</span>
+
+<span class="sd">        If no event is associated to this transition it returns 0.</span>
+
+<span class="sd">        :return: the level of the event associated to this transition</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">get_level</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="Event"><a class="viewcode-back" href="../automaton.html#automaton.Event">[docs]</a><span class="k">class</span> <span class="nc">Event</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a (composed) event associated to a transition.</span>
+
+<span class="sd">    An event has the following attributes:</span>
+<span class="sd">        - multiset: a Counter representing the multiset of its components</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the event.</span>
+
+<span class="sd">        :param name: the name of the event</span>
+<span class="sd">        :type name: str or list(str)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiset</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Event.get_name"><a class="viewcode-back" href="../automaton.html#automaton.Event.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the name of this event.</span>
+
+<span class="sd">        If its level is greater than 1, the name is obtained concatenating the names of its components using &#39;//&#39; as</span>
+<span class="sd">        separator.</span>
+
+<span class="sd">        :return: the name of this event</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="s1">&#39;//&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multiset</span><span class="o">.</span><span class="n">elements</span><span class="p">()))</span></div>
+
+<div class="viewcode-block" id="Event.add"><a class="viewcode-back" href="../automaton.html#automaton.Event.add">[docs]</a>    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds the components of an event to this event.</span>
+
+<span class="sd">        :param event: the event to be added</span>
+<span class="sd">        :type event: Event</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_event</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">multiset</span><span class="o">.</span><span class="n">elements</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">_event</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">str</span><span class="p">:</span>
+                    <span class="n">_event</span> <span class="o">=</span> <span class="p">[</span><span class="n">_event</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">multiset</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_event</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Event.get_level"><a class="viewcode-back" href="../automaton.html#automaton.Event.get_level">[docs]</a>    <span class="k">def</span> <span class="nf">get_level</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the level of this event.</span>
+
+<span class="sd">        The level of a composed event is its components multiset&#39;s cardinality.</span>
+
+<span class="sd">        :return: the level of this event</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multiset</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Event.is_composed_by_all_identical_instances"><a class="viewcode-back" href="../automaton.html#automaton.Event.is_composed_by_all_identical_instances">[docs]</a>    <span class="k">def</span> <span class="nf">is_composed_by_all_identical_instances</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this event is composed by all identical instances of events.</span>
+
+<span class="sd">        :return: whether this event is composed by all identical instances of events or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">multiset</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span></div></div>
+
+
+<div class="viewcode-block" id="Automaton"><a class="viewcode-back" href="../automaton.html#automaton.Automaton">[docs]</a><span class="k">class</span> <span class="nc">Automaton</span><span class="p">:</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents a non-deterministic finite automaton.</span>
+
+<span class="sd">    An automaton has the following attributes:</span>
+<span class="sd">        - initial_state: the name of the initial state</span>
+<span class="sd">        - states: a dict representing its states that maps a name into the corresponding state</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">,</span> <span class="n">states</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes the automaton.</span>
+
+<span class="sd">        :param initial_state: the name of the initial state</span>
+<span class="sd">        :type initial_state: str</span>
+<span class="sd">        :param states: the name-state map</span>
+<span class="sd">        :type states: dict(str: State)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span> <span class="o">=</span> <span class="n">initial_state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="n">states</span>
+
+<div class="viewcode-block" id="Automaton.get_initial_state"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.get_initial_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_initial_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the initial state&#39;s name of this automaton.</span>
+
+<span class="sd">        :return: the name of its initial state</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span></div>
+
+<div class="viewcode-block" id="Automaton.get_states"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.get_states">[docs]</a>    <span class="k">def</span> <span class="nf">get_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the name-state map of this automaton.</span>
+
+<span class="sd">        :return: its name-state map</span>
+<span class="sd">        :rtype: dict(str: State)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span></div>
+
+<div class="viewcode-block" id="Automaton.set_states"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.set_states">[docs]</a>    <span class="k">def</span> <span class="nf">set_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets the name-state map.</span>
+
+<span class="sd">        :param states: the name-state map to be set</span>
+<span class="sd">        :type states: dict(str: State)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="n">states</span></div>
+
+<div class="viewcode-block" id="Automaton.find_reachable_states"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.find_reachable_states">[docs]</a>    <span class="k">def</span> <span class="nf">find_reachable_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_state</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Performs a depth-first search, starting from its initial state.</span>
+
+<span class="sd">        The states that are involved in this search are marked as visited.</span>
+
+<span class="sd">        :param initial_state: the name of its initial state</span>
+<span class="sd">        :type initial_state: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">initial_state</span><span class="o">.</span><span class="n">set_visited</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">initial_state</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">state</span><span class="o">.</span><span class="n">is_visited</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">find_reachable_states</span><span class="p">(</span><span class="n">state</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Automaton.remove_unreachable_states"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.remove_unreachable_states">[docs]</a>    <span class="k">def</span> <span class="nf">remove_unreachable_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes the states that are unreachable from the initial state.</span>
+
+<span class="sd">        To perform this task, a depth-first search is used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">state</span><span class="o">.</span><span class="n">set_visited</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">find_reachable_states</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_state</span><span class="p">])</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">is_visited</span><span class="p">():</span>
+                <span class="n">state</span><span class="o">.</span><span class="n">set_visited</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+                <span class="n">states</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="n">states</span></div>
+
+<div class="viewcode-block" id="Automaton.is_non_deterministic"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.is_non_deterministic">[docs]</a>    <span class="k">def</span> <span class="nf">is_non_deterministic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this automaton is non-deterministic.</span>
+
+<span class="sd">        An automaton is non-deterministic if there is at least a couple of outgoing transitions from the same state and</span>
+<span class="sd">        sharing the same event.</span>
+
+<span class="sd">        :return: whether this automaton is non-deterministic or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transitions</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">():</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">events</span><span class="p">[</span><span class="n">transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()]:</span>
+                                <span class="k">return</span> <span class="bp">True</span>
+                        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                            <span class="n">events</span><span class="p">[</span><span class="n">transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()]</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+
+<div class="viewcode-block" id="Automaton.is_language_alive"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.is_language_alive">[docs]</a>    <span class="k">def</span> <span class="nf">is_language_alive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if the language generated by this automaton on its events alphabet is alive.</span>
+
+<span class="sd">        The language is alive if:</span>
+<span class="sd">            - every state has at least one outgoing transition</span>
+<span class="sd">            - every cyclic path starting from the initial state contains at least an observable transition</span>
+
+<span class="sd">        :return: whether the language generated by this automaton on its events alphabet is alive or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+        <span class="n">loops</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_loops</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">loop</span> <span class="ow">in</span> <span class="n">loops</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">loops</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">src_name</span> <span class="o">=</span> <span class="n">loop</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span><span class="o">.</span><span class="n">has_observable_transitions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]):</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">_continue</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">src_index</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">while</span> <span class="n">src_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span> <span class="ow">and</span> <span class="n">_continue</span><span class="p">:</span>
+                    <span class="n">src_name</span> <span class="o">=</span> <span class="n">loop</span><span class="p">[</span><span class="n">src_index</span><span class="p">]</span>
+                    <span class="n">dst_index</span> <span class="o">=</span> <span class="p">(</span><span class="n">src_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">loop</span><span class="p">)</span>
+                    <span class="n">dst_name</span> <span class="o">=</span> <span class="n">loop</span><span class="p">[</span><span class="n">dst_index</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span><span class="o">.</span><span class="n">has_observable_transitions</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">dst_name</span><span class="p">]):</span>
+                        <span class="n">_continue</span> <span class="o">=</span> <span class="bp">False</span>
+                    <span class="n">src_index</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">_continue</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">return</span> <span class="bp">True</span></div>
+
+<div class="viewcode-block" id="Automaton.has_ambiguous_events"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.has_ambiguous_events">[docs]</a>    <span class="k">def</span> <span class="nf">has_ambiguous_events</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this automaton has at least an ambiguous event.</span>
+
+<span class="sd">        In our definition, an event is ambiguous if it is associated both to a fault transition and to an observable</span>
+<span class="sd">        one.</span>
+
+<span class="sd">        :return: whether this automaton has at least an ambiguous event</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">events</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transitions</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">events</span><span class="p">[</span><span class="n">transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()]</span> <span class="o">!=</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">():</span>
+                            <span class="k">return</span> <span class="bp">True</span>
+                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                        <span class="n">events</span><span class="p">[</span><span class="n">transition</span><span class="o">.</span><span class="n">get_event_name</span><span class="p">()]</span> <span class="o">=</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+
+<div class="viewcode-block" id="Automaton.get_transitions"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.get_transitions">[docs]</a>    <span class="k">def</span> <span class="nf">get_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">unobservable</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the transitions of this automaton.</span>
+
+<span class="sd">        The transitions are returned as a list of tuples in which the first element is the source name and the second</span>
+<span class="sd">        one is the destination name.</span>
+<span class="sd">        If unobservable is True it returns only the unobservable transitions of this automaton, otherwise it returns</span>
+<span class="sd">        all its transitions.</span>
+
+<span class="sd">        :param unobservable: a flag indicating whether to include only unobservable transitions</span>
+<span class="sd">        :type unobservable: bool</span>
+<span class="sd">        :return: the transitions of this automaton according to unobservable flag</span>
+<span class="sd">        :rtype: list(tuple(str, str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">transitions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">neighbour</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">():</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">unobservable</span> <span class="ow">or</span> <span class="n">state</span><span class="o">.</span><span class="n">has_unobservable_transitions</span><span class="p">(</span><span class="n">neighbour</span><span class="p">):</span>
+                    <span class="n">transitions</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">state</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span> <span class="n">neighbour</span><span class="o">.</span><span class="n">get_name</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="n">transitions</span></div>
+
+<div class="viewcode-block" id="Automaton.set_transition_event"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.set_transition_event">[docs]</a>    <span class="k">def</span> <span class="nf">set_transition_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">dst_name</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets an event to a transition.</span>
+
+<span class="sd">        This function is invoked during the first phase of the random generation of an automaton. In this phase</span>
+<span class="sd">        there is only one outgoing transition from one state to a neighbour, so a transition can be identified by its</span>
+<span class="sd">        source state&#39;s name and its destination state&#39;s name.</span>
+<span class="sd">        An event is not added when the transition has an event already associated.</span>
+
+<span class="sd">        :param src_name: the source state&#39;s name of the transition</span>
+<span class="sd">        :type src_name: str</span>
+<span class="sd">        :param dst_name: the destination state&#39;s name of the transition</span>
+<span class="sd">        :type dst_name: str</span>
+<span class="sd">        :param event: the event to be set</span>
+<span class="sd">        :type event: Event</span>
+<span class="sd">        :return: whether the event has been set or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">src</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span>
+        <span class="n">dst</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">get_neighbour</span><span class="p">(</span><span class="n">dst_name</span><span class="p">)</span>
+        <span class="n">transition</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()[</span><span class="n">dst</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">():</span>
+            <span class="n">transition</span><span class="o">.</span><span class="n">set_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">return</span> <span class="bp">False</span></div>
+
+<div class="viewcode-block" id="Automaton.get_unobservable_transitions"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.get_unobservable_transitions">[docs]</a>    <span class="k">def</span> <span class="nf">get_unobservable_transitions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets the unobservable transitions of this automaton.</span>
+
+<span class="sd">        :return: the unobservable transitions of this automaton</span>
+<span class="sd">        :rtype: list(Transition)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">unobservable_transitions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transitions</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">():</span>
+                        <span class="n">unobservable_transitions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">transition</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">unobservable_transitions</span></div>
+
+<div class="viewcode-block" id="Automaton.get_loops"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.get_loops">[docs]</a>    <span class="k">def</span> <span class="nf">get_loops</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Gets all the simple cycles of this automaton.</span>
+
+<span class="sd">        The cycles are returned as a list of tuples, sorted by their length. Each tuple represents a cycle and</span>
+<span class="sd">        it is composed by the sequence of the names of the states taking part to that cycle.</span>
+
+<span class="sd">        :return: all the simple cycles of this automaton</span>
+<span class="sd">        :rtype: list(tuple(str))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">simple_cycles</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_transitions</span><span class="p">()))),</span> <span class="n">key</span><span class="o">=</span><span class="nb">len</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Automaton.has_fault_loops"><a class="viewcode-back" href="../automaton.html#automaton.Automaton.has_fault_loops">[docs]</a>    <span class="k">def</span> <span class="nf">has_fault_loops</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Checks if this automaton has at least a cycle composed only of fault transitions.</span>
+
+<span class="sd">        :return: whether this automaton has at least a cycle composed only of fault transitions or not</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">simple_cycles</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_transitions</span><span class="p">(</span><span class="n">unobservable</span><span class="o">=</span><span class="bp">True</span><span class="p">)))))</span> <span class="o">&gt;</span> <span class="mi">0</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">Diagnosability analysis 1.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, Matteo Mario, Michele Masciale.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.2.
+    </div>
+  </body>
+</html>

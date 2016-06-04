@@ -15,8 +15,8 @@
             <destination>A</destination>
         </transition>
         <transition fault="true">
-            <source>A</source>
-            <destination>B</destination>
+            <source>B</source>
+            <destination>A</destination>
         </transition>
         <transition observable="true">
             <source>B</source>

@@ -13,11 +13,9 @@ def generate_bad_twin(automaton, level=1):
                     fault = False
                     if transition.is_fault():
                         fault = True
-                    transition.set_crossed()
-                    triplets = find(dst, level - transition.get_event_cardinality(), fault, transition.get_event())
-                    transition.set_crossed(False)
+                    triplets = find(dst, level - transition.get_event_level(), fault, transition.get_event())
                     for event, dst2, fault2 in triplets:
-                        if level == 1 or not event.is_composed_by_all_same_events():
+                        if level == 1 or not event.is_composed_by_all_identical_instances():
                             dst2_name = dst2.get_name()
                             states[src_name].add_transition(states[dst2_name], Transition(event=event, fault=fault2))
     bad_twin = Automaton(automaton.get_initial_state(), states)
@@ -37,7 +35,7 @@ def generate_good_twin(bad_twin):
     good_twin.remove_unreachable_states()
     return good_twin
 
-def first_synchronize(bad_twin, good_twin):
+def synchronize_1(bad_twin, good_twin):
     states = dict()
     ambiguous_transitions = set()
     for src_name in good_twin.get_states():
@@ -93,7 +91,7 @@ def first_synchronize(bad_twin, good_twin):
     initial_state = ','.join([good_twin.get_initial_state()] * 2)
     return Automaton(initial_state, states), ambiguous_transitions
 
-def second_synchronize(old_synchronized, ambiguous_transitions, bad_twin, level):
+def synchronize_2(old_synchronized, ambiguous_transitions, bad_twin, level):
     states = deepcopy(old_synchronized.get_states())
     bt_states = bad_twin.get_states()
     prev_states = set(states.keys())
@@ -141,33 +139,28 @@ def find(dst, n, fault, event):
     triplets = list()
     for dst2, transitions in dst.get_neighbours().iteritems():
         for transition in transitions:
-            if not transition.is_crossed():
-                fault2 = fault
-                if transition.is_fault():
-                    fault2 = True
-                event_cardinality = transition.get_event_cardinality()
-                if transition.is_observable() and event_cardinality <= n:
-                    composed_event = deepcopy(transition.get_event())
-                    composed_event.add(deepcopy(event))
-                    if n == event_cardinality:
-                        triplets.append((composed_event, dst2, fault2))
-                    else:
-                        transition.set_crossed()
-                        triplets += find(dst2, n - event_cardinality, fault2, composed_event)
-                        transition.set_crossed(False)
-                if not transition.is_observable():
-                    transition.set_crossed()
-                    triplets += find(dst2, n, fault2, event)
-                    transition.set_crossed(False)
+            fault2 = fault
+            if transition.is_fault():
+                fault2 = True
+            event_level = transition.get_event_level()
+            if transition.is_observable() and event_level <= n:
+                composed_event = deepcopy(transition.get_event())
+                composed_event.add(deepcopy(event))
+                if event_level == n:
+                    triplets.append((composed_event, dst2, fault2))
+                else:
+                    triplets += find(dst2, n - event_level, fault2, composed_event)
+            if not transition.is_observable():
+                triplets += find(dst2, n, fault2, event)
     return triplets
 
-def first_condition(ambiguous_transitions):
+def condition_C1(ambiguous_transitions):
     return len(ambiguous_transitions) == 0
 
-def second_condition(bad_twin):
+def condition_C2(bad_twin):
     return not bad_twin.is_non_deterministic()
 
-def third_condition(bad_twin):
+def condition_C3(bad_twin):
     return not bad_twin.has_ambiguous_events()
 
 def initialize_states(automaton):
@@ -177,19 +170,10 @@ def initialize_states(automaton):
     return states
 
 def find_loops(src, visited):
-    # print 'expanding '+src.get_name()+' '+str(len(src.get_neighbours()))
     for dst in src.get_neighbours():
-        # print 'visiting '+dst.get_name()+' ('+src.get_name()+')'
         if dst.get_name() in visited:
-            # print dst.get_name()+' ('+src.get_name()+') already visited'
             return True
         visited.add(src.get_name())
-        # new_visited = deepcopy(visited)
-        # print 'visited '+src.get_name()
-        # new_visited.add(src.get_name())
         if find_loops(dst, visited):
-        # if find_loops(dst, new_visited):
-            # print 'backtracking true'
             return True
-    # print 'backtracking false'
     return False

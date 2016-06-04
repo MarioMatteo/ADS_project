@@ -20,7 +20,7 @@ EVENT_NAME_ERROR = 'Invalid event name %s. Characters \'//\' and \'+\' are not a
 def validate_syntax(filepath):
     try:
         doc = etree.parse(filepath)
-        xsd = etree.parse('schema.xsd')
+        xsd = etree.parse('schema/automaton.xsd')
         xmlschema = etree.XMLSchema(xsd)
         xmlschema.assertValid(doc)
     except (etree.XMLSyntaxError, etree.DocumentInvalid) as e:
