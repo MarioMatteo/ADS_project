@@ -47,10 +47,28 @@
           <div class="body" role="main">
             
   <h1>Source code for utils</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span> <span class="nn">file_handler</span> <span class="kn">import</span> <span class="o">*</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Contains the methods used by the solving algorithms.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">file_handler</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
 
 <div class="viewcode-block" id="generate_bad_twin"><a class="viewcode-back" href="../utils.html#utils.generate_bad_twin">[docs]</a><span class="k">def</span> <span class="nf">generate_bad_twin</span><span class="p">(</span><span class="n">automaton</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates the next level bad twin starting from the current level one.</span>
+
+<span class="sd">    Note that the 0-level bad twin is the input automaton.</span>
+
+<span class="sd">    :param automaton: the current level bad twin</span>
+<span class="sd">    :type automaton: Automaton</span>
+<span class="sd">    :param level: the next level of the bad twin to be generated</span>
+<span class="sd">    :type level: int</span>
+<span class="sd">    :return: the next level bad twin</span>
+<span class="sd">    :rtype: Automaton</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">states</span> <span class="o">=</span> <span class="n">initialize_states</span><span class="p">(</span><span class="n">automaton</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">automaton</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">dst</span><span class="p">,</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
@@ -73,6 +91,16 @@
     <span class="k">return</span> <span class="n">bad_twin</span></div>
 
 <div class="viewcode-block" id="generate_good_twin"><a class="viewcode-back" href="../utils.html#utils.generate_good_twin">[docs]</a><span class="k">def</span> <span class="nf">generate_good_twin</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates the good twin starting from the bad twin.</span>
+
+<span class="sd">    :param bad_twin: the bad twin</span>
+<span class="sd">    :type bad_twin: Automaton</span>
+<span class="sd">    :return: the good twin</span>
+<span class="sd">    :rtype: Automaton</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">states</span> <span class="o">=</span> <span class="n">initialize_states</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">bad_twin</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">dst</span><span class="p">,</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
@@ -84,7 +112,24 @@
     <span class="n">good_twin</span><span class="o">.</span><span class="n">remove_unreachable_states</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">good_twin</span></div>
 
-<div class="viewcode-block" id="first_synchronize"><a class="viewcode-back" href="../utils.html#utils.first_synchronize">[docs]</a><span class="k">def</span> <span class="nf">first_synchronize</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">,</span> <span class="n">good_twin</span><span class="p">):</span>
+<div class="viewcode-block" id="synchronize_1"><a class="viewcode-back" href="../utils.html#utils.synchronize_1">[docs]</a><span class="k">def</span> <span class="nf">synchronize_1</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">,</span> <span class="n">good_twin</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates the synchronized automaton starting from the bad twin and the good twin.</span>
+
+<span class="sd">    It implements the first version of the synchronization method.</span>
+<span class="sd">    It returns both the synchronized automaton and the set of representative ambiguous transitions.</span>
+<span class="sd">    Each ambiguous transition is represented by a tuple in which the first element is the source state name and the</span>
+<span class="sd">    second one is the destination state name.</span>
+
+<span class="sd">    :param bad_twin: the bad twin</span>
+<span class="sd">    :type bad_twin: Automaton</span>
+<span class="sd">    :param good_twin: the good twin</span>
+<span class="sd">    :type good_twin: Automaton</span>
+<span class="sd">    :return: the synchronized automaton and the set of ambiguous transitions</span>
+<span class="sd">    :rtype: tuple(Automaton, set(tuple(str, str)))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">states</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">ambiguous_transitions</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">src_name</span> <span class="ow">in</span> <span class="n">good_twin</span><span class="o">.</span><span class="n">get_states</span><span class="p">():</span>
@@ -140,7 +185,28 @@
     <span class="n">initial_state</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">good_twin</span><span class="o">.</span><span class="n">get_initial_state</span><span class="p">()]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">Automaton</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">states</span><span class="p">),</span> <span class="n">ambiguous_transitions</span></div>
 
-<div class="viewcode-block" id="second_synchronize"><a class="viewcode-back" href="../utils.html#utils.second_synchronize">[docs]</a><span class="k">def</span> <span class="nf">second_synchronize</span><span class="p">(</span><span class="n">old_synchronized</span><span class="p">,</span> <span class="n">ambiguous_transitions</span><span class="p">,</span> <span class="n">bad_twin</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+<div class="viewcode-block" id="synchronize_2"><a class="viewcode-back" href="../utils.html#utils.synchronize_2">[docs]</a><span class="k">def</span> <span class="nf">synchronize_2</span><span class="p">(</span><span class="n">old_synchronized</span><span class="p">,</span> <span class="n">ambiguous_transitions</span><span class="p">,</span> <span class="n">bad_twin</span><span class="p">,</span> <span class="n">level</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generates the synchronized automaton starting from the previous level synchronized one.</span>
+
+<span class="sd">    It implements the second version of the synchronization method.</span>
+<span class="sd">    It returns both the synchronized automaton and the set of representative ambiguous transitions.</span>
+<span class="sd">    Each ambiguous transition is represented by a tuple in which the first element is the source state name and the</span>
+<span class="sd">    second one is the destination state name.</span>
+
+<span class="sd">    :param old_synchronized: the previous level synchronized automaton</span>
+<span class="sd">    :type old_synchronized: Automaton</span>
+<span class="sd">    :param ambiguous_transitions: the set of ambiguous transitions to be updated</span>
+<span class="sd">    :type ambiguous_transitions: set(tuple(str, str))</span>
+<span class="sd">    :param bad_twin: the current level bad twin</span>
+<span class="sd">    :type bad_twin: Automaton</span>
+<span class="sd">    :param level: the current level</span>
+<span class="sd">    :type level: int</span>
+<span class="sd">    :return: the synchronized automaton</span>
+<span class="sd">    :rtype: Automaton</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">states</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">old_synchronized</span><span class="o">.</span><span class="n">get_states</span><span class="p">())</span>
     <span class="n">bt_states</span> <span class="o">=</span> <span class="n">bad_twin</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span>
     <span class="n">prev_states</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">states</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -184,49 +250,121 @@
     <span class="n">initial_state</span> <span class="o">=</span> <span class="n">old_synchronized</span><span class="o">.</span><span class="n">get_initial_state</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">Automaton</span><span class="p">(</span><span class="n">initial_state</span><span class="p">,</span> <span class="n">states</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="find"><a class="viewcode-back" href="../utils.html#utils.find">[docs]</a><span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">fault</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+<div class="viewcode-block" id="find"><a class="viewcode-back" href="../utils.html#utils.find">[docs]</a><span class="k">def</span> <span class="nf">find</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">fault</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds the triplets according to the provided pseudocode.</span>
+
+<span class="sd">    :param src: the starting state</span>
+<span class="sd">    :type src: State</span>
+<span class="sd">    :param n: the target level</span>
+<span class="sd">    :type n: int</span>
+<span class="sd">    :param fault: a flag indicating whether the transition is fault or not</span>
+<span class="sd">    :type fault: bool</span>
+<span class="sd">    :param event: the composed n-level event to be associated to the transition</span>
+<span class="sd">    :type event: Event</span>
+<span class="sd">    :return: the triplets according to the provided pseudocode</span>
+<span class="sd">    :rtype: list(tuple(Event, State, bool))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">triplets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">dst2</span><span class="p">,</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">dst</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">dst</span><span class="p">,</span> <span class="n">transitions</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">transition</span> <span class="ow">in</span> <span class="n">transitions</span><span class="p">:</span>
-            <span class="n">fault2</span> <span class="o">=</span> <span class="n">fault</span>
+            <span class="n">_fault</span> <span class="o">=</span> <span class="n">fault</span>
             <span class="k">if</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_fault</span><span class="p">():</span>
-                <span class="n">fault2</span> <span class="o">=</span> <span class="bp">True</span>
+                <span class="n">_fault</span> <span class="o">=</span> <span class="bp">True</span>
             <span class="n">event_level</span> <span class="o">=</span> <span class="n">transition</span><span class="o">.</span><span class="n">get_event_level</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">()</span> <span class="ow">and</span> <span class="n">event_level</span> <span class="o">&lt;=</span> <span class="n">n</span><span class="p">:</span>
                 <span class="n">composed_event</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">transition</span><span class="o">.</span><span class="n">get_event</span><span class="p">())</span>
                 <span class="n">composed_event</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">event</span><span class="p">))</span>
                 <span class="k">if</span> <span class="n">event_level</span> <span class="o">==</span> <span class="n">n</span><span class="p">:</span>
-                    <span class="n">triplets</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">composed_event</span><span class="p">,</span> <span class="n">dst2</span><span class="p">,</span> <span class="n">fault2</span><span class="p">))</span>
+                    <span class="n">triplets</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">composed_event</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">_fault</span><span class="p">))</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">triplets</span> <span class="o">+=</span> <span class="n">find</span><span class="p">(</span><span class="n">dst2</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="n">event_level</span><span class="p">,</span> <span class="n">fault2</span><span class="p">,</span> <span class="n">composed_event</span><span class="p">)</span>
+                    <span class="n">triplets</span> <span class="o">+=</span> <span class="n">find</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="n">event_level</span><span class="p">,</span> <span class="n">_fault</span><span class="p">,</span> <span class="n">composed_event</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">transition</span><span class="o">.</span><span class="n">is_observable</span><span class="p">():</span>
-                <span class="n">triplets</span> <span class="o">+=</span> <span class="n">find</span><span class="p">(</span><span class="n">dst2</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">fault2</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+                <span class="n">triplets</span> <span class="o">+=</span> <span class="n">find</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">_fault</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">triplets</span></div>
 
 <div class="viewcode-block" id="condition_C1"><a class="viewcode-back" href="../utils.html#utils.condition_C1">[docs]</a><span class="k">def</span> <span class="nf">condition_C1</span><span class="p">(</span><span class="n">ambiguous_transitions</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if condition C1 is satisfied.</span>
+
+<span class="sd">    Condition C1 is satisfied if the set of ambiguous transitions is empty.</span>
+
+<span class="sd">    :param ambiguous_transitions: set of ambiguous transitions</span>
+<span class="sd">    :type ambiguous_transitions: set(tuple(str, str))</span>
+<span class="sd">    :return: whether condition C1 is satisfied or not</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">ambiguous_transitions</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span></div>
 
 <div class="viewcode-block" id="condition_C2"><a class="viewcode-back" href="../utils.html#utils.condition_C2">[docs]</a><span class="k">def</span> <span class="nf">condition_C2</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if condition C2 is satisfied.</span>
+
+<span class="sd">    Condition C2 is satisfied if the bad twin is not non-deterministic.</span>
+
+<span class="sd">    :param bad_twin: the current level bad twin</span>
+<span class="sd">    :type bad_twin: Automaton</span>
+<span class="sd">    :return: whether condition C2 is satisfied or not</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">return</span> <span class="ow">not</span> <span class="n">bad_twin</span><span class="o">.</span><span class="n">is_non_deterministic</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="condition_C3"><a class="viewcode-back" href="../utils.html#utils.condition_C3">[docs]</a><span class="k">def</span> <span class="nf">condition_C3</span><span class="p">(</span><span class="n">bad_twin</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if condition C3 is satisfied.</span>
+
+<span class="sd">    Condition C3 is satisfied if the bad twin has no events associated both to a fault transition and to an observable</span>
+<span class="sd">    one.</span>
+
+<span class="sd">    :param bad_twin: the current level bad twin</span>
+<span class="sd">    :type bad_twin: Automaton</span>
+<span class="sd">    :return: whether condition C3 is satisfied or not</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">return</span> <span class="ow">not</span> <span class="n">bad_twin</span><span class="o">.</span><span class="n">has_ambiguous_events</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="initialize_states"><a class="viewcode-back" href="../utils.html#utils.initialize_states">[docs]</a><span class="k">def</span> <span class="nf">initialize_states</span><span class="p">(</span><span class="n">automaton</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a name-state map of an automaton.</span>
+
+<span class="sd">    :param automaton: the automaton</span>
+<span class="sd">    :type automaton: Automaton</span>
+<span class="sd">    :return: the name-state map the automaton</span>
+<span class="sd">    :rtype: dict(str: State)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">states</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">automaton</span><span class="o">.</span><span class="n">get_states</span><span class="p">()</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
         <span class="n">states</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">State</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">states</span></div>
 
 <div class="viewcode-block" id="find_loops"><a class="viewcode-back" href="../utils.html#utils.find_loops">[docs]</a><span class="k">def</span> <span class="nf">find_loops</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">visited</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if there is some cyclic path starting from a state.</span>
+
+<span class="sd">    :param src: the starting state</span>
+<span class="sd">    :type src: State</span>
+<span class="sd">    :param visited: set of names of already visited states</span>
+<span class="sd">    :type visited: set(str)</span>
+<span class="sd">    :return: whether there is some cyclic path starting from the input state</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">for</span> <span class="n">dst</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">get_neighbours</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">dst</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">True</span>
         <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
-        <span class="c1"># new_visited = deepcopy(visited)</span>
-        <span class="c1"># new_visited.add(src.get_name())</span>
         <span class="k">if</span> <span class="n">find_loops</span><span class="p">(</span><span class="n">dst</span><span class="p">,</span> <span class="n">visited</span><span class="p">):</span>
-        <span class="c1"># if find_loops(dst, new_visited):</span>
             <span class="k">return</span> <span class="bp">True</span>
     <span class="k">return</span> <span class="bp">False</span></div>
 </pre></div>

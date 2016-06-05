@@ -50,55 +50,233 @@
             
   <div class="section" id="module-utils">
 <span id="utils-module"></span><h1>utils module<a class="headerlink" href="#module-utils" title="Permalink to this headline">¶</a></h1>
+<p>Contains the methods used by the solving algorithms.</p>
 <dl class="function">
 <dt id="utils.condition_C1">
 <code class="descclassname">utils.</code><code class="descname">condition_C1</code><span class="sig-paren">(</span><em>ambiguous_transitions</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#condition_C1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.condition_C1" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks if condition C1 is satisfied.</p>
+<p>Condition C1 is satisfied if the set of ambiguous transitions is empty.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>ambiguous_transitions</strong> (<em>set(tuple(str, str))</em>) &#8211; set of ambiguous transitions</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">whether condition C1 is satisfied or not</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="utils.condition_C2">
 <code class="descclassname">utils.</code><code class="descname">condition_C2</code><span class="sig-paren">(</span><em>bad_twin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#condition_C2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.condition_C2" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks if condition C2 is satisfied.</p>
+<p>Condition C2 is satisfied if the bad twin is not non-deterministic.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bad_twin</strong> (<a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton"><em>Automaton</em></a>) &#8211; the current level bad twin</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">whether condition C2 is satisfied or not</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="utils.condition_C3">
 <code class="descclassname">utils.</code><code class="descname">condition_C3</code><span class="sig-paren">(</span><em>bad_twin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#condition_C3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.condition_C3" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks if condition C3 is satisfied.</p>
+<p>Condition C3 is satisfied if the bad twin has no events associated both to a fault transition and to an observable
+one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bad_twin</strong> (<a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton"><em>Automaton</em></a>) &#8211; the current level bad twin</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">whether condition C3 is satisfied or not</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="utils.find">
-<code class="descclassname">utils.</code><code class="descname">find</code><span class="sig-paren">(</span><em>dst</em>, <em>n</em>, <em>fault</em>, <em>event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.find" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<code class="descclassname">utils.</code><code class="descname">find</code><span class="sig-paren">(</span><em>src</em>, <em>n</em>, <em>fault</em>, <em>event</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the triplets according to the provided pseudocode.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>src</strong> (<a class="reference internal" href="automaton.html#automaton.State" title="automaton.State"><em>State</em></a>) &#8211; the starting state</li>
+<li><strong>n</strong> (<em>int</em>) &#8211; the target level</li>
+<li><strong>fault</strong> (<em>bool</em>) &#8211; a flag indicating whether the transition is fault or not</li>
+<li><strong>event</strong> (<a class="reference internal" href="automaton.html#automaton.Event" title="automaton.Event"><em>Event</em></a>) &#8211; the composed n-level event to be associated to the transition</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the triplets according to the provided pseudocode</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list(tuple(Event, State, bool))</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="utils.find_loops">
 <code class="descclassname">utils.</code><code class="descname">find_loops</code><span class="sig-paren">(</span><em>src</em>, <em>visited</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#find_loops"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.find_loops" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="utils.first_synchronize">
-<code class="descclassname">utils.</code><code class="descname">first_synchronize</code><span class="sig-paren">(</span><em>bad_twin</em>, <em>good_twin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#first_synchronize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.first_synchronize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Checks if there is some cyclic path starting from a state.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>src</strong> (<a class="reference internal" href="automaton.html#automaton.State" title="automaton.State"><em>State</em></a>) &#8211; the starting state</li>
+<li><strong>visited</strong> (<em>set(str)</em>) &#8211; set of names of already visited states</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">whether there is some cyclic path starting from the input state</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">bool</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="utils.generate_bad_twin">
 <code class="descclassname">utils.</code><code class="descname">generate_bad_twin</code><span class="sig-paren">(</span><em>automaton</em>, <em>level=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#generate_bad_twin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.generate_bad_twin" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generates the next level bad twin starting from the current level one.</p>
+<p>Note that the 0-level bad twin is the input automaton.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>automaton</strong> (<a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton"><em>Automaton</em></a>) &#8211; the current level bad twin</li>
+<li><strong>level</strong> (<em>int</em>) &#8211; the next level of the bad twin to be generated</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the next level bad twin</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton">Automaton</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="utils.generate_good_twin">
 <code class="descclassname">utils.</code><code class="descname">generate_good_twin</code><span class="sig-paren">(</span><em>bad_twin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#generate_good_twin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.generate_good_twin" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Generates the good twin starting from the bad twin.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bad_twin</strong> (<a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton"><em>Automaton</em></a>) &#8211; the bad twin</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the good twin</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton">Automaton</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="utils.initialize_states">
 <code class="descclassname">utils.</code><code class="descname">initialize_states</code><span class="sig-paren">(</span><em>automaton</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#initialize_states"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.initialize_states" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Creates a name-state map of an automaton.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>automaton</strong> (<a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton"><em>Automaton</em></a>) &#8211; the automaton</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">the name-state map the automaton</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">dict(str: State)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
-<dt id="utils.second_synchronize">
-<code class="descclassname">utils.</code><code class="descname">second_synchronize</code><span class="sig-paren">(</span><em>old_synchronized</em>, <em>ambiguous_transitions</em>, <em>bad_twin</em>, <em>level</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#second_synchronize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.second_synchronize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="utils.synchronize_1">
+<code class="descclassname">utils.</code><code class="descname">synchronize_1</code><span class="sig-paren">(</span><em>bad_twin</em>, <em>good_twin</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#synchronize_1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.synchronize_1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the synchronized automaton starting from the bad twin and the good twin.</p>
+<p>It implements the first version of the synchronization method.
+It returns both the synchronized automaton and the set of representative ambiguous transitions.
+Each ambiguous transition is represented by a tuple in which the first element is the source state name and the
+second one is the destination state name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>bad_twin</strong> (<a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton"><em>Automaton</em></a>) &#8211; the bad twin</li>
+<li><strong>good_twin</strong> (<a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton"><em>Automaton</em></a>) &#8211; the good twin</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the synchronized automaton and the set of ambiguous transitions</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">tuple(Automaton, set(tuple(str, str)))</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="utils.synchronize_2">
+<code class="descclassname">utils.</code><code class="descname">synchronize_2</code><span class="sig-paren">(</span><em>old_synchronized</em>, <em>ambiguous_transitions</em>, <em>bad_twin</em>, <em>level</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/utils.html#synchronize_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#utils.synchronize_2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generates the synchronized automaton starting from the previous level synchronized one.</p>
+<p>It implements the second version of the synchronization method.
+It returns both the synchronized automaton and the set of representative ambiguous transitions.
+Each ambiguous transition is represented by a tuple in which the first element is the source state name and the
+second one is the destination state name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>old_synchronized</strong> (<a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton"><em>Automaton</em></a>) &#8211; the previous level synchronized automaton</li>
+<li><strong>ambiguous_transitions</strong> (<em>set(tuple(str, str))</em>) &#8211; the set of ambiguous transitions to be updated</li>
+<li><strong>bad_twin</strong> (<a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton"><em>Automaton</em></a>) &#8211; the current level bad twin</li>
+<li><strong>level</strong> (<em>int</em>) &#8211; the current level</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">the synchronized automaton</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference internal" href="automaton.html#automaton.Automaton" title="automaton.Automaton">Automaton</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 </div>
 
