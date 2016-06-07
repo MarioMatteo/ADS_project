@@ -21,7 +21,7 @@ def generate_random_automaton(ns, nt, ne, no, nf):
     while len(loops) > no:
         states = initialize_states(automaton)
         added_nt = add_minimal_transitions(states[initial_state], states, ns, nt - ns)
-        automaton = Automaton(initial_state, states)
+        automaton.set_states(states)
         loops = automaton.get_loops()
     nt -= added_nt
     added_no = add_minimal_observable_transitions(automaton, event_names, loops)

@@ -122,8 +122,8 @@ class State:
         Adds an outgoing transition from this state towards a neighbour.
 
         A transition is not added when:
-            - it's a self loop unobservable transition
-            - it creates a loop of unobservable transitions between this state and its neighbour
+            - it's a self loop fault transition
+            - it creates a loop of fault transitions between this state and its neighbour
             - it's already present (see beelow)
 
         :param neighbour: the neighbour state
@@ -134,10 +134,9 @@ class State:
         :rtype: bool
         """
 
-        if self.equals(neighbour) and not transition.is_observable():
+        if self.equals(neighbour) and transition.is_fault():
             return False
-        if (self.has_unobservable_transitions(neighbour) or neighbour.has_unobservable_transitions(self)) and \
-                not transition.is_observable():
+        if neighbour.has_fault_transitions(self) and transition.is_fault():
             return False
         if neighbour not in self.neighbours:
             self.neighbours[neighbour] = [transition]
@@ -183,6 +182,24 @@ class State:
             return False
         for transition in self.neighbours[neighbour]:
             if transition.is_observable():
+                return True
+        return False
+
+    def has_fault_transitions(self, neighbour):
+
+        """
+        Checks if this state has at least a fault transition towards a neighbour.
+
+        :param neighbour: the neighbour state
+        :type neighbour: State
+        :return: whether this state has at least a fault transition towards a neighbour
+        :rtype: bool
+        """
+
+        if neighbour not in self.neighbours:
+            return False
+        for transition in self.neighbours[neighbour]:
+            if transition.is_fault():
                 return True
         return False
 

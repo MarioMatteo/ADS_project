@@ -345,7 +345,7 @@ def check_diagnosability_level(automaton, process_message):
     method = params['method']
     #global automaton, status_bar, status_text, result_label
     # result_label['text'] = ''
-    process_message.put('result_label[\'text\'] = \'\'')
+    # process_message.put('result_label[\'text\'] = \'\'')
     def get_text_result(method, result):
         if type(result) is bool:
             result = 'true (' + str(level) + ')'
@@ -400,7 +400,8 @@ def display_image(name):
 
 
 def run_command():
-    global automaton, p, process_message
+    global automaton, p, result_label, process_message
+    result_label['text'] = ''
     p = multiprocessing.Process(target=check_diagnosability_level, args=(automaton, process_message))
     p.start()
 
