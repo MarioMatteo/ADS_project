@@ -4,24 +4,37 @@
 		<state initial="true">A</state>
 		<state>C</state>
 		<state>B</state>
+		<state>E</state>
 		<state>D</state>
 	</states>
 	<transitions>
 		<transition>
 			<source>A</source>
-			<destination>C</destination>
+			<destination>E</destination>
 		</transition>
-		<transition fault="true">
+		<transition>
 			<source>C</source>
 			<destination>D</destination>
 		</transition>
-		<transition>
+		<transition observable="true">
 			<source>B</source>
+			<event>b</event>
+			<destination>B</destination>
+		</transition>
+		<transition>
+			<source>E</source>
 			<destination>C</destination>
 		</transition>
-		<transition observable="true">
+		<transition fault="true">
+			<source>E</source>
+			<destination>C</destination>
+		</transition>
+		<transition>
+			<source>E</source>
+			<destination>D</destination>
+		</transition>
+		<transition>
 			<source>D</source>
-			<event>b</event>
 			<destination>B</destination>
 		</transition>
 	</transitions>

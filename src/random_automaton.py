@@ -1,7 +1,29 @@
 from utils import *
 import string, random
 
+STATES_TRANSITIONS_NUMBER_ERROR = 'The number of transitions must be greater or equal to the number of states'
+ZERO_OBSERVABLE_TRANSITIONS_ERROR = 'The number of observable transitions must be greater or equal to 1'
+ZERO_FAULT_TRANSITIONS_ERROR = 'The number of fault transitions must be greater or equal to 1'
+TOTAL_TRANSITIONS_NUMBER_ERROR = 'The sum of observable transitions and of fault ones must be less or equal to the total number of transitions'
+OBSERVABLE_EVENTS_TRANSITIONS_NUMBER_ERROR = 'The cardinality of events alphabet must be less or equal to the number of observable transitions'
+
+def validate_params(ns, nt, ne, no, nf):
+    if nt < ns:
+        return STATES_TRANSITIONS_NUMBER_ERROR
+    if no == 0:
+        return ZERO_OBSERVABLE_TRANSITIONS_ERROR
+    if nf == 0:
+        return ZERO_FAULT_TRANSITIONS_ERROR
+    if nt < no + nf:
+        return TOTAL_TRANSITIONS_NUMBER_ERROR
+    if ne > no:
+        return OBSERVABLE_EVENTS_TRANSITIONS_NUMBER_ERROR
+    return True
+
 def generate_random_automaton(ns, nt, ne, no, nf):
+    check = validate_params(ns, nt, ne, no, nf)
+    if type(check) is not bool:
+        return check
     states = dict()
     if ns <= len(string.ascii_uppercase):
         state_names = string.ascii_uppercase[:ns]
