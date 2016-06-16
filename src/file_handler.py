@@ -39,7 +39,7 @@ def validate_syntax(filepath):
 
     :param filepath: the path of the xml file representing the automaton structure.
     :type filepath: str
-    :return: true if the xml syntax is correct, otherwise the error message
+    :return: true if the xml syntax is correct, the error message otherwise
     :rtype: bool or str
     """
 
@@ -68,7 +68,7 @@ def validate_xml_semantics(filepath):
 
     :param filepath: the path of the xml file representing the automaton
     :type filepath: str
-    :return: true if the xml semantics is correct, otherwise the error message
+    :return: true if the xml semantics is correct, the error message otherwise
     :rtype: bool or str
 
     """
@@ -206,9 +206,9 @@ def save_xml(automaton, filename):
                     ET.SubElement(transition, 'event').text = event.get_name()
                 ET.SubElement(transition, 'destination').text = dst_name
     xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(encoding='utf-8')
-    save_file('xmls/' + filename + '.xml', xmlstr)
+    save_file('temp/xmls/' + filename + '.xml', xmlstr)
 
-def save_img(automaton, file_name, compact, save_source):
+def save_img(automaton, file_name, compact):
 
     """
     Saves the graphical representation of the automaton into a png file.
@@ -219,8 +219,6 @@ def save_img(automaton, file_name, compact, save_source):
     :type file_name: str
     :param compact: whether to render transitions in compact mode or in complete mode
     :type compact: bool
-    :param save_source: whether to save source files of the graphical representation
-    :type save_source: bool
     """
 
     dot = Digraph(name=file_name, format='png', graph_attr={'rankdir': 'LR'})
@@ -286,7 +284,7 @@ def save_img(automaton, file_name, compact, save_source):
                     dot.edge(src, dst, _attributes={'color': 'gray65'})
                 else:
                     dot.edge(src, dst, label=events)
-    dot.render('imgs/' + file_name, cleanup=not save_source, view=False)
+    dot.render('temp/imgs/' + file_name, view=False, cleanup=True)
 
 def save_file(filename, content):
 
@@ -298,13 +296,24 @@ def save_file(filename, content):
     :param content: the text to save into the file
     :type content: str
     """
-
-    if not os.path.exists(os.path.dirname(filename)):
-        os.makedirs(os.path.dirname(filename))
+    create_dir(os.path.dirname(filename))
     with open(filename, 'w') as f:
         f.write(content)
 
-def save_automata_files(level, compact, save_source, bad_twin=None, good_twin=None, synchronized=None):
+def create_dir(dirname):
+    """
+    Creates a directory.
+
+    :param dirname: the name of the directory
+    :type dirname: str
+    :return: the name of the directory followed by a separator
+    :rtype: str
+    """
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    return dirname + '/'
+
+def save_automata_files(level, compact, bad_twin=None, good_twin=None, synchronized=None):
 
     """
     Saves xml and png files representing the automata.
@@ -315,8 +324,6 @@ def save_automata_files(level, compact, save_source, bad_twin=None, good_twin=No
     :type level: int
     :param compact: whether to render transitions in compact mode or in complete mode
     :type compact: bool
-    :param save_source: whether to save source files of the graphical representation
-    :type save_source: bool
     :param bad_twin: the current level bad twin
     :type bad_twin: Automaton or None
     :param good_twin: the current level good twin
@@ -327,10 +334,10 @@ def save_automata_files(level, compact, save_source, bad_twin=None, good_twin=No
 
     if bad_twin is not None:
         save_xml(bad_twin, "b" + str(level))
-        save_img(bad_twin, "b" + str(level), compact, save_source)
+        save_img(bad_twin, "b" + str(level), compact)
     if good_twin is not None:
         save_xml(good_twin, "g" + str(level))
-        save_img(good_twin, "g" + str(level), compact, save_source)
+        save_img(good_twin, "g" + str(level), compact)
     if synchronized is not None:
         save_xml(synchronized, "s" + str(level))
-        save_img(synchronized, "s" + str(level), compact, save_source)
+        save_img(synchronized, "s" + str(level), compact)

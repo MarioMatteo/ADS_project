@@ -94,7 +94,7 @@ class State:
 
         :param name: the neighbour's name
         :type name: str
-        :return: the neighbour state if exists, otherwise None
+        :return: the neighbour state if exists, None otherwise
         :rtype: State or None
         """
 
@@ -362,7 +362,7 @@ class Transition:
 
         If no event is associated to this transition it returns None.
 
-        :return: the name of the event associated to this transition if exists, otherwise None
+        :return: the name of the event associated to this transition if exists, None otherwise
         :rtype: str or None
         """
 
