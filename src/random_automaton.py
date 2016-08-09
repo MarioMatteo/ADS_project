@@ -2,49 +2,42 @@ from utils import *
 from config import *
 import string, random
 
-STATES_TRANSITIONS_NUMBER_ERROR = 'The number of transitions must be greater or equal than the number of states'
-ZERO_OBSERVABLE_TRANSITIONS_ERROR = 'The number of observable transitions must be greater or equal than 1'
-OBSERVABLE_EVENTS_TRANSITIONS_NUMBER_ERROR = 'The cardinality of events alphabet must be less or equal than the number of observable transitions'
-ZERO_FAULT_TRANSITIONS_ERROR = 'The number of fault transitions must be greater or equal than 1'
-TOTAL_TRANSITIONS_NUMBER_ERROR = 'The sum of observable transitions and of fault ones must be less or equal than the total number of transitions'
-MAX_ATTEMPTS_ERROR = 'Maximum number of attempts exceeded'
-
 def validate_params(ns, nt, no, ne, nf):
 
     """
     Validates the input parameters of the random automata generator.
 
-    The parameters are considered valid if they satisfy this constraints:
+    The parameters are considered valid if they satisfy the following constraints:
         - nt >= ns
         - no != 0
         - ne <= no
         - nf != 0
         - nt >= no + nf
 
-    :param ns: number of states
+    :param ns: the number of states
     :type ns: int
-    :param nt: maximum number of transitions
+    :param nt: the maximum number of transitions
     :type nt: int
-    :param no: number of observable transitions
+    :param no: the number of observable transitions
     :type no: int
-    :param ne: cardinality of events alphabet
+    :param ne: the cardinality of the events alphabet
     :type ne: int
-    :param nf: number of fault transitions
+    :param nf: the number of fault transitions
     :type nf: int
     :return: true if the parameters are valid, the error message otherwise
     :rtype: bool or str
     """
 
     if nt < ns:
-        return STATES_TRANSITIONS_NUMBER_ERROR
+        return log.STATES_TRANSITIONS_NUMBER_ERROR
     if no == 0:
-        return ZERO_OBSERVABLE_TRANSITIONS_ERROR
+        return log.ZERO_OBSERVABLE_TRANSITIONS_ERROR
     if ne > no:
-        return OBSERVABLE_EVENTS_TRANSITIONS_NUMBER_ERROR
+        return log.OBSERVABLE_EVENTS_TRANSITIONS_NUMBER_ERROR
     if nf == 0:
-        return ZERO_FAULT_TRANSITIONS_ERROR
+        return log.ZERO_FAULT_TRANSITIONS_ERROR
     if nt < no + nf:
-        return TOTAL_TRANSITIONS_NUMBER_ERROR
+        return log.TOTAL_TRANSITIONS_NUMBER_ERROR
     return True
 
 def generate_random_automaton(ns, nt, no, ne, nf):
@@ -61,15 +54,15 @@ def generate_random_automaton(ns, nt, no, ne, nf):
         - other random observable transitions are added till the total number of observable transitions is no
         - some random fault transitions are added
     
-    :param ns: number of states
+    :param ns: the number of states
     :type ns: int
-    :param nt: maximum number of transitions
+    :param nt: the maximum number of transitions
     :type nt: int
-    :param no: number of observable transitions
+    :param no: the number of observable transitions
     :type no: int
-    :param ne: cardinality of events alphabet
+    :param ne: the cardinality of the events alphabet
     :type ne: int
-    :param nf: number of fault transitions
+    :param nf: the number of fault transitions
     :type nf: int
     :return: true if the parameters are valid and maximum number of attempts is not reached, the error message otherwise
     :rtype: bool or str
@@ -101,7 +94,7 @@ def generate_random_automaton(ns, nt, no, ne, nf):
     attempts = 1
     while len(loops) > no:
         if attempts > max_attempts:
-            return MAX_ATTEMPTS_ERROR
+            return log.MAX_ATTEMPTS_ERROR
         states = initialize_states(automaton)
         added_nt = add_minimal_transitions(states[initial_state], states, ns, nt - ns)
         automaton.set_states(states)
@@ -118,7 +111,7 @@ def generate_random_automaton(ns, nt, no, ne, nf):
             attempts = 1
             while not src.add_transition(dst, Transition(Event(event_name))):
                 if attempts == max_attempts:
-                    return MAX_ATTEMPTS_ERROR
+                    return log.MAX_ATTEMPTS_ERROR
                 src = states[random.choice(states_names)]
                 dst = states[random.choice(states_names)]
                 attempts += 1
@@ -135,7 +128,7 @@ def generate_random_automaton(ns, nt, no, ne, nf):
     attempts1 = 0
     while True:
         if attempts1 == max_attempts:
-            return MAX_ATTEMPTS_ERROR
+            return log.MAX_ATTEMPTS_ERROR
         nt = prev_nt
         nf = prev_nf
         automaton = deepcopy(prev_automaton)
@@ -147,7 +140,7 @@ def generate_random_automaton(ns, nt, no, ne, nf):
                 attempts2 = 1
                 while not src.add_transition(dst, Transition(fault=True)):
                     if attempts2 == max_attempts:
-                        return MAX_ATTEMPTS_ERROR
+                        return log.MAX_ATTEMPTS_ERROR
                     src = states[random.choice(states_names)]
                     dst = states[random.choice(states_names)]
                     attempts2 += 1
@@ -160,7 +153,7 @@ def generate_random_automaton(ns, nt, no, ne, nf):
             nf -= 1
         if not automaton.has_fault_loops():
             break
-        attempts += 1
+        attempts1 += 1
     for state in automaton.get_states().values():
         state.set_visited(False)
     return automaton
@@ -171,11 +164,11 @@ def initialize_events_names(events_names, no):
     Initializes the list of the events names.
 
     It starts from a list of ne events names and generates a shuffled list of no events names, using a sampling with
-    replacement and ensuring that all the input events names appears int the output list.
+    replacement and ensuring that all the input events names appears in the output list.
 
     :param events_names: the list of the events names
     :type events_names: list(str)
-    :param no: number of observable transitions
+    :param no: the number of observable transitions
     :type no: int
     :return: the shuffled list of no sampled events names
     :rtype: list(str)
@@ -248,7 +241,7 @@ def add_minimal_observable_transitions(automaton, events_names, loops):
     """
     Adds random observable transitions.
 
-     It adds some random observable transitions in order to guarantee that the events alphabet is alive.
+    It adds some random observable transitions in order to guarantee that the events alphabet is alive.
 
     :param automaton: the automaton to be updated
     :type automaton: Automaton
@@ -281,19 +274,19 @@ def search_automaton(ns, nt, no, ne, nf, level, method):
     """
     Searches an automaton whose diagnosability level is at least level.
 
-    :param ns: number of states
+    :param ns: the number of states
     :type ns: int
-    :param nt: maximum number of transitions
+    :param nt: the maximum number of transitions
     :type nt: int
-    :param no: number of observable transitions
+    :param no: the number of observable transitions
     :type no: int
-    :param ne: cardinality of events alphabet
+    :param ne: the cardinality of the events alphabet
     :type ne: int
-    :param nf: number of fault transitions
+    :param nf: the number of fault transitions
     :type nf: int
-    :param level: diagnosability level
+    :param level: the diagnosability level
     :type level: int
-    :param method: method used to check the diagnosability level
+    :param method: the method used to check the diagnosability level
     :type method: func
     :return: the automaton found
     :rtype: Automaton

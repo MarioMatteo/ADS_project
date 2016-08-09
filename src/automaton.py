@@ -267,7 +267,7 @@ class Transition:
     Represents a transition of the automaton.
 
     A transition has the following attributes:
-        - event: the event associated to the transition
+        - event: the event associated with the transition
         - fault: a boolean flag marking it as fault
         - ambiguous: a boolean flag marking it as ambiguous
     """
@@ -277,7 +277,7 @@ class Transition:
         """
         Initializes the transition.
 
-        :param event: the event to be associated to the transition
+        :param event: the event to be associated with the transition
         :type event: Event
         :param fault: a flag indicating whether the transition is fault or not
         :type fault: bool
@@ -292,9 +292,9 @@ class Transition:
     def get_event(self):
 
         """
-        Gets the event associated to this transition.
+        Gets the event associated with this transition.
 
-        :return: the event associated to the transition
+        :return: the event associated with the transition
         :rtype: Event
         """
 
@@ -328,7 +328,7 @@ class Transition:
         """
         Checks if this transition is observable.
 
-        A transition is observable if there is a not null event associated to it
+        A transition is observable if there is a not null event associated with it
 
         :return: whether the transition is observable or not
         :rtype: bool
@@ -339,9 +339,9 @@ class Transition:
     def set_event(self, event):
 
         """
-        Associates an event to this transition.
+        Associates an event with this transition.
 
-        :param event: the event to be associated to this transition
+        :param event: the event to be associated with this transition
         :type event: Event
         """
 
@@ -358,11 +358,11 @@ class Transition:
     def get_event_name(self):
 
         """
-        Gets the name of the event associated to this transition.
+        Gets the name of the event associated with this transition.
 
-        If no event is associated to this transition it returns None.
+        If no event is associated with this transition it returns None.
 
-        :return: the name of the event associated to this transition if exists, None otherwise
+        :return: the name of the event associated with this transition if exists, None otherwise
         :rtype: str or None
         """
 
@@ -373,11 +373,11 @@ class Transition:
     def get_event_level(self):
 
         """
-        Gets the level of the event associated to this transition.
+        Gets the level of the event associated with this transition.
 
-        If no event is associated to this transition it returns 0.
+        If no event is associated with this transition it returns 0.
 
-        :return: the level of the event associated to this transition
+        :return: the level of the event associated with this transition
         :rtype: int
         """
 
@@ -389,7 +389,7 @@ class Transition:
 class Event:
 
     """
-    Represents a (composed) event associated to a transition.
+    Represents a (composed) event associated with a transition.
 
     An event has the following attributes:
         - multiset: a Counter representing the multiset of its components

@@ -212,7 +212,7 @@ def find(src, n, fault, event):
     :type n: int
     :param fault: a flag indicating whether the transition is fault or not
     :type fault: bool
-    :param event: the composed n-level event to be associated to the transition
+    :param event: the composed n-level event to be associated with the transition
     :type event: Event
     :return: the triplets according to the provided pseudocode
     :rtype: list(tuple(Event, State, bool))

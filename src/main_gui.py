@@ -1,13 +1,30 @@
+"""
+Main application with graphical user interface
+"""
+
 from random_automaton import *
 import log
 from Tkinter import *
 from PIL import ImageTk, Image
 import tkFileDialog as fileDialog
-import inspect, multiprocessing, thread
+import multiprocessing, thread
 from multiprocessing import Queue
 import datetime
 
 def send_message(process_message, _type, msg=None):
+
+    """
+    Sends a message.
+
+    The message is put in a queue that represents the means of communication between the threads.
+
+    :param process_message: the queue where the message is put
+    :type process_message: Queue
+    :param _type: the type of the message
+    :type _type: int
+    :param msg: optional string to be inserted in the message
+    :type msg: str or tuple(str) or None
+    """
     if _type == log.TYPE_METH_SEP:
         process_message.put('report.append(\'' + log.METH_SEP + '\')')
     if _type == log.TYPE_COLOR_CHANGE:
@@ -45,6 +62,21 @@ def send_message(process_message, _type, msg=None):
         process_message.put('report.append(\'' + log.END_LEV_SEP + '\')')
 
 def method1(automaton, params, process_message):
+
+    """
+    Implements the first resolving method.
+
+    :param automaton: the automaton to be checked
+    :type automaton: Automaton
+    :param params: the parameters to be used, read from the configuration file
+    :type params: dict(str: int or str)
+    :param process_message: the queue where to put messages to be sent
+    :type process_message: Queue
+    :return: True if the automaton has the diagnosability level specified in params, the maximum diagnosability level
+    otherwise
+    :rtype: bool or int
+    """
+
     send_message(process_message, log.TYPE_METH_SEP)
     level = params['level']
     save = to_bool(params['save'])
@@ -53,7 +85,7 @@ def method1(automaton, params, process_message):
     i = 1
     send_message(process_message, log.TYPE_COLOR_CHANGE, 'blue')
     while i <= level:
-        msg_bt = log.MSG_BT %('1', i)
+        msg_bt = log.MSG_BT % ('1', i)
         send_message(process_message, log.TYPE_MSG_TWIN, msg_bt)
         new_bad_twin = generate_bad_twin(old_bad_twin, i)
         msg_gt = log.MSG_GT % ('1', i)
@@ -69,19 +101,34 @@ def method1(automaton, params, process_message):
         for src_name, dst_name in ambiguous_transitions:
             states = synchronized.get_states()
             if find_loops(states[dst_name], {src_name}):
-                msg_lev_sat = log.MSG_LEV_SAT %('1', i, ' not ')
-                msg_max_lev = log.MSG_MAX_LEV %('1', i - 1)
+                msg_lev_sat = log.MSG_LEV_SAT % ('1', i, ' not ')
+                msg_max_lev = log.MSG_MAX_LEV % ('1', i - 1)
                 send_message(process_message, log.TYPE_END_LEV, (msg_lev_sat, msg_max_lev))
                 return i - 1
         old_bad_twin = new_bad_twin
         msg_lev_sat = log.MSG_LEV_SAT % ('1', i, ' ')
         send_message(process_message, log.TYPE_LEV_SAT, msg_lev_sat)
         i += 1
-    msg_true_lev = log.MSG_TRUE_LEV %('1', level)
+    msg_true_lev = log.MSG_TRUE_LEV % ('1', level)
     send_message(process_message, log.TYPE_LEV_SAT, msg_true_lev)
     return True
 
 def method2(automaton, params, process_message):
+
+    """
+    Implements the second resolving method.
+
+    :param automaton: the automaton to be checked
+    :type automaton: Automaton
+    :param params: the parameters to be used, read from the configuration file
+    :type params: dict(str: int or str)
+    :param process_message: the queue where to put messages to be sent
+    :type process_message: Queue
+    :return: True if the automaton has the diagnosability level specified in params, the maximum diagnosability level
+    otherwise
+    :rtype: bool or int
+    """
+
     send_message(process_message, log.TYPE_METH_SEP)
     level = params['level']
     save = to_bool(params['save'])
@@ -102,7 +149,7 @@ def method2(automaton, params, process_message):
         c2 = condition_C2(new_bad_twin)
         msg_cond_sat = log.MSG_COND_SAT % ('2', i, 2, ' not ' if not c2 else ' ')
         send_message(process_message, log.TYPE_MSG_TWIN, msg_cond_sat)
-        msg_cond_ver = log.MSG_COND_VER % ('2', 3, i)
+        msg_cond_ver = log.MSG_COND_VER % ('2', i, 3)
         send_message(process_message, log.TYPE_MSG_TWIN, msg_cond_ver)
         c3 = condition_C3(new_bad_twin)
         msg_cond_sat = log.MSG_COND_SAT % ('2', i, 3, ' not ' if not c3 else ' ')
@@ -140,6 +187,26 @@ def method2(automaton, params, process_message):
     return True
 
 def method3_1(automaton, params, process_message):
+
+    """
+    Implements the first version of the third resolving method.
+
+    In the first version the synchronized automaton is computed only when C2 and C3 conditions are not satisfied.
+    If the previous level synchronized automaton is not available it is first computed through the first version of
+    of the synchronization method. Then it is used in the second version of the synchronization method in order to
+    compute the current level synchronized automaton.
+
+    :param automaton: the automaton to be checked
+    :type automaton: Automaton
+    :param params: the parameters to be used, read from the configuration file
+    :type params: dict(str: int or str)
+    :param process_message: the queue where to put messages to be sent
+    :type process_message: Queue
+    :return: True if the automaton has the diagnosability level specified in params, the maximum diagnosability level
+    otherwise
+    :rtype: bool or int
+    """
+
     send_message(process_message, log.TYPE_METH_SEP)
     level = params['level']
     save = to_bool(params['save'])
@@ -224,6 +291,25 @@ def method3_1(automaton, params, process_message):
     return True
 
 def method3_2(automaton, params, process_message):
+
+    """
+    Implements the second version of the third resolving method.
+
+    Unlike the first version, the synchronized automaton is always computed; this guarantees its availability through
+    the iterations. At level one the first version of the synchronization method is used; at next levels the second
+    version is used.
+
+    :param automaton: the automaton to be checked
+    :type automaton: Automaton
+    :param params: the parameters to be used, read from the configuration file
+    :type params: dict(str: int or str)
+    :param process_message: the queue where to put messages to be sent
+    :type process_message: Queue
+    :return: True if the automaton has the diagnosability level specified in params, the maximum diagnosability level
+    otherwise
+    :rtype: bool or int
+    """
+
     send_message(process_message, log.TYPE_METH_SEP)
     level = params['level']
     save = to_bool(params['save'])
@@ -293,6 +379,14 @@ def method3_2(automaton, params, process_message):
     return True
 
 def load():
+
+    """
+    Loads an automaton from an XML file.
+
+    After selecting the XML file through a dialog window, an instance of the Automaton class is created.
+    Furthermore a graphical representation of the loaded automaton is displayed.
+    """
+
     automaton_file = fileDialog.askopenfilename(title='Choose a file that describes an automaton',
                                                 filetypes=(('XML files', '*.xml'), ('All files', '*.*')))
     if len(automaton_file) == 0:
@@ -342,6 +436,14 @@ def load():
         button.place(relx=.5, rely=.5, anchor=CENTER)
 
 def generate():
+
+    """
+    Generates a random automaton, according to the parameters in the configuration file.
+
+    The random automaton generator creates an instance of the Automaton class.
+    Furthermore a graphical representation of the generated automaton is displayed.
+    """
+
     global automaton, canvas, button, automaton_menu, run_menu, status_text, result_label, root
     params = read_params()
     automaton_menu.entryconfig(2, state=DISABLED)
@@ -393,6 +495,13 @@ def generate():
         button.place(relx=.5, rely=.5, anchor=CENTER)
 
 def save_report():
+
+    """
+    Saves a log file.
+
+    The generated report contains all the informations of a run.
+    """
+
     global report, automaton_menu, status_text
     filename = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.log'
     save_file('reports/' + filename, '\n'.join(report))
@@ -400,28 +509,38 @@ def save_report():
     automaton_menu.entryconfig(2, state=DISABLED)
 
 def check_diagnosability_level(automaton, process_message):
+
+    """
+    Checks the diagnosability level of an automaton, according to the parameters in the configuration file.
+
+    :param automaton: the automaton to be checked
+    :type automaton: Automaton
+    :param process_message: the queue where to put messages to be sent
+    :type process_message: Queue
+    """
+
     params = read_params()
     if type(params) is str:
         send_message(process_message, log.TYPE_PARAMS_ERROR)
         return
     level = params['level']
     method = params['method']
+
     def get_text_result(method, result):
         if type(result) is bool:
-            result = 'true (' + str(level) + ')'
-        return log.MSG_MAX_LEV %(method, result)
-    methods = method
-    if method == '1':
-        invoke_methods = [method1]
-    elif method == '2':
-        invoke_methods = [method2]
-    elif method == '3v1':
-        invoke_methods = [method3_1]
-    elif method == '3v2':
-        invoke_methods = [method3_2]
-    else:
+            return log.MSG_TRUE_LEV % (method, level)
+        return log.MSG_MAX_LEV % (method, result)
+
+    methods = [method]
+    if method == 'all':
         methods = [m for m in PARAMS['method']['values'] if m != 'all']
-        invoke_methods = [method1, method2, method3_1, method3_2]
+    invoke_methods = {
+        '1': [method1],
+        '2': [method2],
+        '3v1': [method3_1],
+        '3v2': [method3_2],
+        'all': [method1, method2, method3_1, method3_2]
+    }.get(method)
     results = [m(automaton, params, process_message) for m in invoke_methods]
     text_results = list()
     for method, result in zip(methods, results):
@@ -429,20 +548,30 @@ def check_diagnosability_level(automaton, process_message):
     send_message(process_message, log.TYPE_FINISH, '\\n'.join(text_results))
 
 def edit():
+
+    """
+    Opens the configuration file with a text editor.
+    """
+
     os.startfile(CONFIG_FILE_PATH, 'open')
 
 def display_image(name):
-    def get_script_dir(follow_symlinks=True):
-        if getattr(sys, 'frozen', False):
-            path = os.path.abspath(sys.executable)
-        else:
-            path = inspect.getabsfile(get_script_dir)
-        if follow_symlinks:
-            path = os.path.realpath(path)
-        return os.path.dirname(path)
+
+    """
+    Displays the image with a given name.
+
+    :param name: the name of the image to be displayed
+    :type name: str
+    """
+
     os.startfile(get_script_dir() + '\\temp\\imgs\\' + name, 'open')
 
 def run_command():
+
+    """
+    Starts the diagnosability level check in a new process.
+    """
+
     global automaton, p, result_label, process_message, automaton_menu, run_menu, report
     result_label['text'] = ''
     report = list()
@@ -454,6 +583,11 @@ def run_command():
     p.start()
 
 def stop_command():
+
+    """
+    Terminates the process previously started.
+    """
+
     global p, automaton_menu, run_menu, status_text, root
     if p:
         p.terminate()
@@ -466,6 +600,11 @@ def stop_command():
         root.update_idletasks()
 
 def terminate_and_quit():
+
+    """
+    Terminates the process previously started and closes the main window.
+    """
+
     global p, root
     if p:
         p.terminate()
@@ -473,6 +612,14 @@ def terminate_and_quit():
     root.quit()
 
 def process_queue(message_queue):
+
+    """
+    Executes the commands of the queue in a listening thread.
+
+    :param message_queue: the queue containing the commands
+    :type message_queue: Queue
+    """
+
     global status_bar, status_text, result_label
     while True:
         exec message_queue.get()

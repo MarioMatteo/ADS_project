@@ -2,10 +2,10 @@
 Contains the methods to parse and validate the configuration file in order to read the parameters.
 """
 
+import log
 import ConfigParser
 
 CONFIG_FILE_PATH = 'config\params.ini'
-PARAMS_ERROR = 'Error(s) found in configuration file'
 PARAMS = {
     #   [DIAGNOSABILITY ANALYSIS]
     'level': {'type': int, 'domain': lambda x: x > 0},
@@ -25,7 +25,7 @@ PARAMS = {
     'n': {'type': int, 'domain': lambda x: x > 0},
     'bf': {'type': float, 'domain': lambda x: x > 0},
     'po': {'type': float, 'domain': lambda x: 0 < x < 1},
-    'pe': {'type': float, 'domain': lambda x: 0 < x < 1},
+    'pe': {'type': float, 'domain': lambda x: 0 < x <= 1},
     'pf': {'type': float, 'domain': lambda x: 0 < x < 1},
     'lvmin': {'type': int, 'domain': lambda x: x > 0},
     'lvmax': {'type': int, 'domain': lambda x: x > 0},
@@ -33,17 +33,14 @@ PARAMS = {
     'nsmin': {'type': int, 'domain': lambda x: x > 1},
     'nsmax': {'type': int, 'domain': lambda x: x > 1},
     'nsstep': {'type': int, 'domain': lambda x: x > 0},
-    'ntmin': {'type': int, 'domain': lambda x: x > 1},
-    'ntmax': {'type': int, 'domain': lambda x: x > 1},
-    'ntstep': {'type': int, 'domain': lambda x: x > 0},
     'bfmin': {'type': float, 'domain': lambda x: x >= 1},
     'bfmax': {'type': float, 'domain': lambda x: x >= 1},
     'bfstep': {'type': float, 'domain': lambda x: x > 0},
     'pomin': {'type': float, 'domain': lambda x: 0 < x < 1},
     'pomax': {'type': float, 'domain': lambda x: 0 < x < 1},
     'postep': {'type': float, 'domain': lambda x: 0 < x < 1},
-    'pemin': {'type': float, 'domain': lambda x: 0 < x < 1},
-    'pemax': {'type': float, 'domain': lambda x: 0 < x < 1},
+    'pemin': {'type': float, 'domain': lambda x: 0 < x <= 1},
+    'pemax': {'type': float, 'domain': lambda x: 0 < x <= 1},
     'pestep': {'type': float, 'domain': lambda x: 0 < x < 1},
     'pfmin': {'type': float, 'domain': lambda x: 0 < x < 1},
     'pfmax': {'type': float, 'domain': lambda x: 0 < x < 1},
@@ -91,14 +88,14 @@ def validate_params(params):
         return False
     for param, value in params.iteritems():
         if param not in PARAMS:
-            return PARAMS_ERROR
+            return log.PARAMS_ERROR
         v = PARAMS[param]
         if 'type' in v:
             if type(value) is not v['type'] or not v['domain'](value):
-                return PARAMS_ERROR
+                return log.PARAMS_ERROR
         else:
             if value not in v['values']:
-                return PARAMS_ERROR
+                return log.PARAMS_ERROR
     return params
 
 def to_bool(value):
@@ -112,6 +109,4 @@ def to_bool(value):
     :rtype: bool
     """
 
-    if value == 'yes':
-        return True
-    return False
+    return value == 'yes'

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<automaton>
+	<states>
+		<state initial="true">A</state>
+		<state>B</state>
+		<state>C</state>
+	</states>
+	<transitions>
+		<transition>
+            <source>A</source>
+            <destination>B</destination>
+        </transition>
+        <transition observable="true">
+            <source>A</source>
+            <event>a</event>
+            <destination>C</destination>
+        </transition>
+        <transition fault="true">
+            <source>C</source>
+            <destination>B</destination>
+        </transition>
+        <transition observable="true">
+            <source>B</source>
+            <event>b</event>
+            <destination>B</destination>
+        </transition>
+	</transitions>
+</automaton>
