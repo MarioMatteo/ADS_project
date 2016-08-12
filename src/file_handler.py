@@ -195,7 +195,7 @@ def save_xml(automaton, filename):
                     ET.SubElement(transition, 'event').text = event.get_name()
                 ET.SubElement(transition, 'destination').text = dst_name
     xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(encoding='utf-8')
-    save_file('temp/xmls/' + filename + '.XML', xmlstr)
+    save_file('temp/xmls/' + filename + '.xml', xmlstr)
 
 def save_img(automaton, file_name, compact):
 

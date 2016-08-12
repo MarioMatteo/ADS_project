@@ -219,6 +219,7 @@ def show_progress(varname, varvalue, varmin, varmax, varstep, i, n):
     if type(varvalue) is float:
         varvalue = round(varvalue, 2)
         varmax = round(varmax, 2)
+    os.system('cls')
     print varname + ': ' + str(varvalue) + '/' + str(varmax) + ', n: ' + str(i + 1) + '/' + str(n) + ', progress: ' + \
           str(progress) + '% (' + str(num) + '/' + str(den) + ')'
 
@@ -243,7 +244,7 @@ def lv_analysis():
     with open(lv_dir + filename, 'wb') as csvfile:
         fw = csv.writer(csvfile)
         fw.writerow(('lv', 'ns', 'nt', 'no', 'ne', 'nf',
-                     'method 1', 'method 2', 'method 3v1', 'method 3v2'))
+                     'method1', 'method2', 'method3_1', 'method3_2'))
         lv = lvmin
         while lv <= lvmax:
             times = [0] * 4
@@ -276,7 +277,7 @@ def ns_analysis():
     with open(ns_dir + filename, 'wb') as csvfile:
         fw = csv.writer(csvfile)
         fw.writerow(('lv', 'ns', 'nt', 'no', 'ne', 'nf',
-                     'method 1', 'method 2', 'method 3v1', 'method 3v2'))
+                     'method1', 'method2', 'method3_1', 'method3_2'))
         ns = nsmin
         while ns <= nsmax:
             nt = int(round(bf * ns))
@@ -292,6 +293,151 @@ def ns_analysis():
             ns += nsstep
     csvfile.close()
 
+def bf_analysis():
+
+    """
+    Performs the analysis by varying the branching factor.
+    """
+
+    global params
+    n = params['n']
+    level = params['level']
+    bfmin = params['bfmin']
+    bfmax = params['bfmax']
+    bfstep = params['bfstep']
+    ns = params['ns']
+    po = params['po']
+    pe = params['pe']
+    pf = params['pf']
+    bf_dir = create_dir(TIMES_PATH + 'bf')
+    filename = datetime.datetime.now().strftime(DATE_FORMAT) + '.csv'
+    with open(bf_dir + filename, 'wb') as csvfile:
+        fw = csv.writer(csvfile)
+        fw.writerow(('lv', 'ns', 'bf', 'nt', 'no', 'ne', 'nf',
+                     'method1', 'method2', 'method3_1', 'method3_2'))
+        bf = bfmin
+        while bf <= bfmax:
+            nt = int(round(bf * ns))
+            no = max(int(round(po * nt)), 1)
+            ne = max(int(round(pe * no)), 1)
+            nf = max(int(round(pf * nt)), 1)
+            times = [0] * 4
+            for i in range(n):
+                times = map(sum, zip(times, get_times(level, ns, nt, no, ne, nf)))
+                show_progress('bf', bf, bfmin, bfmax, bfstep, i, n)
+            times = map(lambda x: float(x) / n, times)
+            fw.writerow((level, ns, bf, nt, no, ne, nf) + tuple(times))
+            bf += bfstep
+    csvfile.close()
+
+def pe_analysis():
+
+    """
+    Performs the analysis by varying the cardinality of events alphabet over the number of observable transitions.
+    """
+
+    global params
+    n = params['n']
+    level = params['level']
+    pemin = params['pemin']
+    pemax = params['pemax']
+    pestep = params['pestep']
+    ns = params['ns']
+    nt = params['nt']
+    po = params['po']
+    pf = params['pf']
+    pe_dir = create_dir(TIMES_PATH + 'pe')
+    filename = datetime.datetime.now().strftime(DATE_FORMAT) + '.csv'
+    with open(pe_dir + filename, 'wb') as csvfile:
+        fw = csv.writer(csvfile)
+        fw.writerow(('lv', 'ns', 'nt', 'no', 'pe', 'ne', 'nf',
+                     'method1', 'method2', 'method3_1', 'method3_2'))
+        pe = pemin
+        while pe <= pemax:
+            no = max(int(round(po * nt)), 1)
+            ne = max(int(round(pe * no)), 1)
+            nf = max(int(round(pf * nt)), 1)
+            times = [0] * 4
+            for i in range(n):
+                times = map(sum, zip(times, get_times(level, ns, nt, no, ne, nf)))
+                show_progress('pe', pe, pemin, pemax, pestep, i, n)
+            times = map(lambda x: float(x) / n, times)
+            fw.writerow((level, ns, nt, no, pe, ne, nf) + tuple(times))
+            pe += pestep
+    csvfile.close()
+
+def po_analysis():
+
+    """
+    Performs the analysis by varying the percentage of observable transitions.
+    """
+
+    global params
+    n = params['n']
+    level = params['level']
+    pomin = params['pomin']
+    pomax = params['pomax']
+    postep = params['postep']
+    ns = params['ns']
+    nt = params['nt']
+    pe = params['pe']
+    pf = params['pf']
+    po_dir = create_dir(TIMES_PATH + 'po')
+    filename = datetime.datetime.now().strftime(DATE_FORMAT) + '.csv'
+    with open(po_dir + filename, 'wb') as csvfile:
+        fw = csv.writer(csvfile)
+        fw.writerow(('lv', 'ns', 'nt', 'po', 'no', 'ne', 'nf',
+                     'method1', 'method2', 'method3_1', 'method3_2'))
+        po = pomin
+        while po <= pomax:
+            no = max(int(round(po * nt)), 1)
+            ne = max(int(round(pe * no)), 1)
+            nf = max(int(round(pf * nt)), 1)
+            times = [0] * 4
+            for i in range(n):
+                times = map(sum, zip(times, get_times(level, ns, nt, no, ne, nf)))
+                show_progress('po', po, pomin, pomax, postep, i, n)
+            times = map(lambda x: float(x) / n, times)
+            fw.writerow((level, ns, nt, po, no, ne, nf) + tuple(times))
+            po += postep
+    csvfile.close()
+
+def pf_analysis():
+
+    """
+    Performs the analysis by varying the percentage of fault transitions.
+    """
+
+    global params
+    n = params['n']
+    level = params['level']
+    pfmin = params['pfmin']
+    pfmax = params['pfmax']
+    pfstep = params['pfstep']
+    ns = params['ns']
+    nt = params['nt']
+    po = params['po']
+    pe = params['pe']
+    pf_dir = create_dir(TIMES_PATH + 'pf')
+    filename = datetime.datetime.now().strftime(DATE_FORMAT) + '.csv'
+    with open(pf_dir + filename, 'wb') as csvfile:
+        fw = csv.writer(csvfile)
+        fw.writerow(('lv', 'ns', 'nt', 'no', 'ne', 'pf', 'nf',
+                     'method1', 'method2', 'method3_1', 'method3_2'))
+        pf = pfmin
+        while pf <= pfmax:
+            no = max(int(round(po * nt)), 1)
+            ne = max(int(round(pe * no)), 1)
+            nf = max(int(round(pf * nt)), 1)
+            times = [0] * 4
+            for i in range(n):
+                times = map(sum, zip(times, get_times(level, ns, nt, no, ne, nf)))
+                show_progress('pf', pf, pfmin, pfmax, pfstep, i, n)
+            times = map(lambda x: float(x) / n, times)
+            fw.writerow((level, ns, nt, no, ne, pf, nf) + tuple(times))
+            pf += pfstep
+    csvfile.close()
+
 def complexity_analysis(var):
 
     """
@@ -300,6 +446,10 @@ def complexity_analysis(var):
 
     {'lv': lv_analysis,
      'ns': ns_analysis,
+     'bf': bf_analysis,
+     'pe': pe_analysis,
+     'po': po_analysis,
+     'pf': pf_analysis
     }.get(var)()
 
 if __name__ == '__main__':

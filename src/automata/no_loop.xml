@@ -22,7 +22,7 @@
         </transition>
         <transition observable="true">
             <source>C</source>
-            <event>c</event>
+            <event>b</event>
             <destination>C</destination>
         </transition>
     </transitions>

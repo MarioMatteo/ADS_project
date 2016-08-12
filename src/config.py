@@ -21,7 +21,7 @@ PARAMS = {
     'nf': {'type': int, 'domain': lambda x: x > 0},
     'attempts': {'type': int, 'domain': lambda x: x > 0},
     #   [COMPLEXITY ANALYSIS]
-    'var': {'values': ('lv', 'ns', 'nt', 'bf', 'pe', 'po', 'pf')},
+    'var': {'values': ('lv', 'ns', 'bf', 'pe', 'po', 'pf')},
     'n': {'type': int, 'domain': lambda x: x > 0},
     'bf': {'type': float, 'domain': lambda x: x > 0},
     'po': {'type': float, 'domain': lambda x: 0 < x < 1},
