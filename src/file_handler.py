@@ -35,7 +35,7 @@ def validate_syntax(filepath):
 
     try:
         doc = etree.parse(filepath)
-        xsd = etree.parse('schema/automaton.xsd')
+        xsd = etree.parse('src/schema/automaton.xsd')
         xmlschema = etree.XMLSchema(xsd)
         xmlschema.assertValid(doc)
     except (etree.XMLSyntaxError, etree.DocumentInvalid) as e:
@@ -195,7 +195,7 @@ def save_xml(automaton, filename):
                     ET.SubElement(transition, 'event').text = event.get_name()
                 ET.SubElement(transition, 'destination').text = dst_name
     xmlstr = minidom.parseString(ET.tostring(root)).toprettyxml(encoding='utf-8')
-    save_file('temp/xmls/' + filename + '.xml', xmlstr)
+    save_file('output/temp/xmls/' + filename + '.xml', xmlstr)
 
 def save_img(automaton, file_name, compact):
 
@@ -273,7 +273,7 @@ def save_img(automaton, file_name, compact):
                     dot.edge(src, dst, _attributes={'color': 'gray65'})
                 else:
                     dot.edge(src, dst, label=events)
-    dot.render('temp/imgs/' + file_name, view=False, cleanup=True)
+    dot.render('output/temp/imgs/' + file_name, view=False, cleanup=True)
 
 def save_file(filename, content):
 

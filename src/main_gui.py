@@ -388,7 +388,8 @@ def load():
     """
 
     automaton_file = fileDialog.askopenfilename(title='Choose a file that describes an automaton',
-                                                filetypes=(('XML files', '*.xml'), ('All files', '*.*')))
+                                                filetypes=(('XML files', '*.xml'), ('All files', '*.*')),
+                                                initialdir='input')
     if len(automaton_file) == 0:
         return
     global automaton, canvas, button, automaton_menu, run_menu, status_bar, status_text, result_label
@@ -504,7 +505,7 @@ def save_report():
 
     global report, automaton_menu, status_text
     filename = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.log'
-    save_file('reports/' + filename, '\n'.join(report))
+    save_file('output/reports/' + filename, '\n'.join(report))
     status_text.set('Report successfully saved!')
     automaton_menu.entryconfig(2, state=DISABLED)
 

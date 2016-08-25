@@ -3,7 +3,7 @@ import time, datetime
 import csv
 import math
 
-TIMES_PATH = 'times/'
+TIMES_PATH = 'output/times/'
 DATE_FORMAT = '%Y-%m-%d_%H-%M-%S'
 
 def method1(automaton, level):
